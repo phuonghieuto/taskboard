@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: mysql
+    image: mysql:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ./database/init-multi-postgres-databases.sh:/docker-entrypoint-initdb.d/init-multi-mysql-databases.sh
+      - ./database/sql:/docker-entrypoint-initdb.d/sql
+
+  discovery:
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+    env_file:
+      - .env
+    container_name: discovery-server
+
+  gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - discovery
+    networks:
+      - microservices-network
+    env_file:
+      - .env
+    container_name: api-gateway
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - discovery
+    networks:
+      - microservices-network
+    env_file:
+      - .env
+    container_name: user-service
+
+  finance-service:
+    build:
+      context: ./finance-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    depends_on:
+      - discovery
+    networks:
+      - microservices-network
+    env_file:
+      - .env
+    container_name: finance-service
+
+  game-event-service:
+    build:
+      context: ./game-event-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      - discovery
+    networks:
+      - microservices-network
+    env_file:
+      - .env
+    container_name: game-event-service
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    depends_on:
+      - discovery
+    networks:
+      - microservices-network
+    env_file:
+      - .env
+    container_name: notification-service
+
+  reward-service:
+    build:
+      context: ./reward-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    depends_on:
+      - discovery
+    networks:
+      - microservices-network
+    env_file:
+      - .env
+    container_name: reward-service
+
+networks:
+  microservices-network:
+    driver: bridge
