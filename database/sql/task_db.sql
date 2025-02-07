@@ -1,9 +1,7 @@
-USE `task_db`;
-
 CREATE TABLE IF NOT EXISTS boards (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    user_id INT REFERENCES users(id),
+    user_id INT NOT NULL, -- Store user ID without foreign key constraint
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -21,14 +19,14 @@ CREATE TABLE IF NOT EXISTS cards (
     description TEXT,
     list_id INT REFERENCES lists(id),
     position INT NOT NULL,
-    assignee_id INT REFERENCES users(id),
+    assignee_id INT NOT NULL, -- Store user ID without foreign key constraint
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS comments (
     id SERIAL PRIMARY KEY,
     card_id INT REFERENCES cards(id),
-    user_id INT REFERENCES users(id),
+    user_id INT NOT NULL, -- Store user ID without foreign key constraint
     comment TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
