@@ -1,9 +1,9 @@
 spring:
   application:
-    name: user-service
+    name: notification-service
   datasource:
-    url: jdbc:postgresql://${POSTGRES_URL}:5432/${USER_DB}
-    username: ${USER_DB}
+    url: jdbc:postgresql://${POSTGRES_URL}:5432/${NOTIFICATION_DB}
+    username: ${NOTIFICATION_DB}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
@@ -29,9 +29,8 @@ logging:
             data:
               rest: DEBUG
             orm: DEBUG
-        security: DEBUG
 server:
-  port: 8081
+  port: 8083
   servlet:
     context-path: /api
 
@@ -41,16 +40,16 @@ eureka:
     fetchRegistry: true
   instance:
     hostname: ${SERVICE_HOST:localhost}
-    non-secure-port: ${SERVICE_PORT:8081}
+    non-secure-port: ${SERVICE_PORT:8083}
     prefer-ip-address: true
 
 openapi:
   service:
-    title: User Service API Documentation
+    title: Notification Service API Documentation
     version: 1.0.0
     url: http://localhost:8080 # API Gateway URL
 springdoc:
   api-docs:
-    path: /users/v3/api-docs
+    path: /notifications/v3/api-docs
   swagger-ui:
-    path: /users/swagger-ui.html
+    path: /notifications/swagger-ui.html
