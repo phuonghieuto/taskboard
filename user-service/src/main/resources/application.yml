@@ -33,7 +33,7 @@ logging:
 server:
   port: 8081
   servlet:
-    context-path: /api
+    context-path: /api/v1
 
 eureka:
   client:
@@ -44,13 +44,13 @@ eureka:
     non-secure-port: ${SERVICE_PORT:8081}
     prefer-ip-address: true
 
-openapi:
-  service:
-    title: User Service API Documentation
-    version: 1.0.0
-    url: http://localhost:8080 # API Gateway URL
 springdoc:
   api-docs:
     path: /users/v3/api-docs
   swagger-ui:
     path: /users/swagger-ui.html
+openapi:
+  service:
+    title: User Service API Documentation
+    version: 1.0.0
+    url: http://localhost:8080 # API Gateway URL
