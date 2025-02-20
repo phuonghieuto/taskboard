@@ -46,9 +46,10 @@ eureka:
 logging:
   level:
     root: INFO
-    org.springframework.cloud.gateway.route.RouteDefinitionLocator: INFO
-    org.springframework.cloud.gateway: TRACE
-    org.springframework.cloud.gateway.filter.ReactiveLoadBalancerClientFilter: TRACE
+    org:
+      [springframework.cloud.gateway.route.RouteDefinitionLocator]: INFO
+    [org.springframework.cloud.gateway]: INFO
+    [org.springframework.cloud.gateway.filter.ReactiveLoadBalancerClientFilter]: INFO
 
 springdoc:
   api-docs:

@@ -41,11 +41,11 @@ if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
     create_databases $user $pswd
 
     sql_file="/docker-entrypoint-initdb.d/sql/${user}.sql"
-    if [ -f "$sql_file" ]; then
-      run_sql_script $user "$sql_file"
-    else
-      echo "No SQL script found for database '$user'"
-    fi
+    # if [ -f "$sql_file" ]; then
+    #   run_sql_script $user "$sql_file"
+    # else
+    #   echo "No SQL script found for database '$user'"
+    # fi
   done
   echo "Multiple databases created!"
 fi
