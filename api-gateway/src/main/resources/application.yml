@@ -5,22 +5,22 @@ spring:
         locator:
           enabled: true  # Enable service discovery for dynamic routing
       routes:
-        - id: user-service
-          uri: lb://user-service
+        - id: auth-service
+          uri: lb://auth-service
           predicates:
             - Path=/api/v1/users/**
         - id: auth-service
           uri: lb://auth-service
           predicates:
-            - Path=/v1/auth/**
+            - Path=/api/v1/auth/**
         - id: task-service
           uri: lb://task-service
           predicates:
-            - Path=/v1/tasks/**
+            - Path=/api/v1/tasks/**
         - id: notification-service
           uri: lb://notification-service
           predicates:
-            - Path=/v1/notifications/**
+            - Path=/api/v1/notifications/**
       globalcors:
         cors-configurations:
           '[/**]':
@@ -61,5 +61,9 @@ springdoc:
     urls:
       - url: /v3/api-docs
         name: API Gateway
-      - url: /api/v1/users/v3/api-docs
-        name: User Service
+      - url: http://localhost:8081/api/v1/auth/api-docs
+        name: Auth Service
+      # - url: http://localhost:8083/v1/tasks/v3/api-docs
+      #   name: Task Service
+      # - url: http://localhost:8084/v1/notifications/v3/api-docs
+      #   name: Notification Service
