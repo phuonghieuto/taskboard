@@ -2,6 +2,8 @@ package com.phuonghieuto.backend.user_service.service.impl;
 
 import com.phuonghieuto.backend.user_service.config.TokenConfigurationParameter;
 import com.phuonghieuto.backend.user_service.service.TokenValidationService;
+import com.phuonghieuto.backend.user_service.service.TokenManagementService;
+import com.phuonghieuto.backend.user_service.exception.TokenAlreadyInvalidatedException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
@@ -21,18 +23,17 @@ import java.util.Set;
 @Slf4j
 public class TokenValidationServiceImpl implements TokenValidationService {
     private final TokenConfigurationParameter tokenConfigurationParameter;
-
+    private final TokenManagementService tokenManagementService;
     @Override
     public void verifyAndValidate(String jwt) {
         try {
+            tokenManagementService.checkForInvalidityOfToken(getId(jwt));
             Jws<Claims> claimsJws = Jwts.parserBuilder()
                     .setSigningKey(tokenConfigurationParameter.getPublicKey())
                     .build()
                     .parseClaimsJws(jwt);
 
-            // Log the claims for debugging purposes
             Claims claims = claimsJws.getBody();
-            log.info("Token claims: {}", claims);
 
             // Additional checks (e.g., expiration, issuer, etc.)
             if (claims.getExpiration().before(new Date())) {
@@ -47,6 +48,9 @@ public class TokenValidationServiceImpl implements TokenValidationService {
         } catch (JwtException e) {
             log.error("Invalid JWT token", e);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid JWT token", e);
+        } catch (TokenAlreadyInvalidatedException e) {
+            log.error("Token is already invalidated", e);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token is already invalidated", e);
         } catch (Exception e) {
             log.error("Error validating token", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating token", e);

@@ -51,6 +51,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Token refreshToken(TokenRefreshRequestDTO tokenRefreshRequest) {
+
         tokenValidationService.verifyAndValidate(tokenRefreshRequest.getRefreshToken());
 
         final String userId = tokenValidationService

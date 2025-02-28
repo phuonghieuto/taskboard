@@ -6,12 +6,13 @@ import com.phuonghieuto.backend.user_service.service.TokenManagementService;
 import com.phuonghieuto.backend.user_service.exception.TokenAlreadyInvalidatedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import lombok.extern.slf4j.Slf4j;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TokenManagementServiceImpl implements TokenManagementService {
     private final InvalidTokenRepository invalidTokenRepository;
 
@@ -28,6 +29,7 @@ public class TokenManagementServiceImpl implements TokenManagementService {
 
     @Override
     public void checkForInvalidityOfToken(String tokenId) {
+        log.info("Checking for invalidity of token with ID: {}", tokenId);
         final boolean isTokenInvalid = invalidTokenRepository.findByTokenId(tokenId).isPresent();
 
         if (isTokenInvalid) {
