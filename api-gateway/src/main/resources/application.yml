@@ -4,23 +4,23 @@ spring:
       discovery:
         locator:
           enabled: true  # Enable service discovery for dynamic routing
-      routes:
-        - id: auth-service
-          uri: lb://auth-service
-          predicates:
-            - Path=/api/v1/users/**
-        - id: auth-service
-          uri: lb://auth-service
-          predicates:
-            - Path=/api/v1/auth/**
-        - id: task-service
-          uri: lb://task-service
-          predicates:
-            - Path=/api/v1/tasks/**
-        - id: notification-service
-          uri: lb://notification-service
-          predicates:
-            - Path=/api/v1/notifications/**
+      # routes:
+      #   - id: auth-service
+      #     uri: lb://auth-service
+      #     predicates:
+      #       - Path=/api/v1/users/**
+      #   - id: auth-service
+      #     uri: lb://auth-service
+      #     predicates:
+      #       - Path=/api/v1/auth/**
+      #   - id: task-service
+      #     uri: lb://task-service
+      #     predicates:
+      #       - Path=/api/v1/tasks/**
+      #   - id: notification-service
+      #     uri: lb://notification-service
+      #     predicates:
+      #       - Path=/api/v1/notifications/**
       globalcors:
         cors-configurations:
           '[/**]':

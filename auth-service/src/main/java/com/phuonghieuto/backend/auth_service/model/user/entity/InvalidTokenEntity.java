@@ -1,6 +1,6 @@
-package com.phuonghieuto.backend.user_service.model.user.entity;
+package com.phuonghieuto.backend.auth_service.model.user.entity;
 
-import com.phuonghieuto.backend.user_service.model.common.entity.BaseEntity;
+import com.phuonghieuto.backend.auth_service.model.common.entity.BaseEntity;
 
 import jakarta.persistence.*;
 import lombok.*;

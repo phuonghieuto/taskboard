@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model.user.dto.request;
+package com.phuonghieuto.backend.auth_service.model.user.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

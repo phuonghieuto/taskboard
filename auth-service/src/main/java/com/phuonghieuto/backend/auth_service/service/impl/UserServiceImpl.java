@@ -1,13 +1,13 @@
-package com.phuonghieuto.backend.user_service.service.impl;
+package com.phuonghieuto.backend.auth_service.service.impl;
 
-import com.phuonghieuto.backend.user_service.exception.UserAlreadyExistException;
-import com.phuonghieuto.backend.user_service.model.User;
-import com.phuonghieuto.backend.user_service.model.user.dto.request.RegisterRequestDTO;
-import com.phuonghieuto.backend.user_service.model.user.entity.UserEntity;
-import com.phuonghieuto.backend.user_service.model.user.mapper.RegisterRequestToUserEntityMapper;
-import com.phuonghieuto.backend.user_service.model.user.mapper.UserEntityToUserMapper;
-import com.phuonghieuto.backend.user_service.repository.UserRepository;
-import com.phuonghieuto.backend.user_service.service.UserService;
+import com.phuonghieuto.backend.auth_service.exception.UserAlreadyExistException;
+import com.phuonghieuto.backend.auth_service.model.User;
+import com.phuonghieuto.backend.auth_service.model.user.dto.request.RegisterRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.entity.UserEntity;
+import com.phuonghieuto.backend.auth_service.model.user.mapper.RegisterRequestToUserEntityMapper;
+import com.phuonghieuto.backend.auth_service.model.user.mapper.UserEntityToUserMapper;
+import com.phuonghieuto.backend.auth_service.repository.UserRepository;
+import com.phuonghieuto.backend.auth_service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

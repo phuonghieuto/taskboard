@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model.common.mapper;
+package com.phuonghieuto.backend.auth_service.model.common.mapper;
 
 import java.util.Collection;
 import java.util.List;

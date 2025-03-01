@@ -1,6 +1,6 @@
-package com.phuonghieuto.backend.user_service.service;
+package com.phuonghieuto.backend.auth_service.service;
 
-import com.phuonghieuto.backend.user_service.model.Token;
+import com.phuonghieuto.backend.auth_service.model.Token;
 
 import java.util.Map;
 

@@ -10,16 +10,24 @@ LOG_FILE="start-services.dev.log"
 exec > >(tee -i $LOG_FILE)
 exec 2>&1
 
-# Disable exit on error
-set +e
+# Stop all containers and remove volumes
+echo "Stopping all containers..."
+docker-compose -f docker-compose.dev.yaml down -v
 
-# Stop and remove containers, networks, images, and volumes
-docker-compose -f docker-compose.dev.yaml down
+# Remove the postgres volume explicitly
+echo "Removing PostgreSQL volume..."
+docker volume rm postgres_data || true
+
+# Prune unused volumes
+echo "Pruning unused volumes..."
+docker volume prune -f
 
 # Build the services
+echo "Building services..."
 docker-compose -f docker-compose.dev.yaml build
 
 # Start the services in detached mode
+echo "Starting services..."
 docker-compose -f docker-compose.dev.yaml up -d
 
 # Check the exit status of the last command

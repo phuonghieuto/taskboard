@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model.user.enums;
+package com.phuonghieuto.backend.auth_service.model.user.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ConfigurationParameter {
 
-    AUTH_ACCESS_TOKEN_EXPIRE_DAY("7"),
-    AUTH_REFRESH_TOKEN_EXPIRE_DAY("14"),
+    AUTH_ACCESS_TOKEN_EXPIRE_MINUTE("30"),
+    AUTH_REFRESH_TOKEN_EXPIRE_DAY("7"),
     AUTH_PUBLIC_KEY("""
             -----BEGIN PUBLIC KEY-----
             MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1HmZ3A379M6Rv9UnMt9R

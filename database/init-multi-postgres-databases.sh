@@ -14,7 +14,6 @@ function create_databases() {
       CREATE DATABASE $database;
       GRANT ALL PRIVILEGES ON DATABASE $database TO $database;
       GRANT ALL PRIVILEGES ON SCHEMA public TO $database;
-      ALTER SCHEMA public OWNER TO $database;
 EOSQL
 }
 

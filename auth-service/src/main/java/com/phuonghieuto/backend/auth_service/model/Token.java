@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model;
+package com.phuonghieuto.backend.auth_service.model;
 
 import org.springframework.util.StringUtils;
 

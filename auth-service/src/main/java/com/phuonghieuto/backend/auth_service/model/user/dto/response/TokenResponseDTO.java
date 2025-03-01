@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model.user.dto.response;
+package com.phuonghieuto.backend.auth_service.model.user.dto.response;
 
 import lombok.*;
 

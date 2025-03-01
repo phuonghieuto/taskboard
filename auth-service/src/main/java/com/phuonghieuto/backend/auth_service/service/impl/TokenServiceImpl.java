@@ -1,9 +1,9 @@
-package com.phuonghieuto.backend.user_service.service.impl;
+package com.phuonghieuto.backend.auth_service.service.impl;
 
-import com.phuonghieuto.backend.user_service.config.TokenConfigurationParameter;
-import com.phuonghieuto.backend.user_service.service.TokenValidationService;
-import com.phuonghieuto.backend.user_service.model.user.enums.TokenClaims;
-import com.phuonghieuto.backend.user_service.service.TokenService;
+import com.phuonghieuto.backend.auth_service.config.TokenConfigurationParameter;
+import com.phuonghieuto.backend.auth_service.service.TokenValidationService;
+import com.phuonghieuto.backend.auth_service.model.user.enums.TokenClaims;
+import com.phuonghieuto.backend.auth_service.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;

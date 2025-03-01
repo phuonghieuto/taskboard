@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.exception.exception_handler;
+package com.phuonghieuto.backend.auth_service.exception.exception_handler;
 
 import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.lang3.StringUtils;
@@ -9,12 +9,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.phuonghieuto.backend.user_service.exception.PasswordNotValidException;
-import com.phuonghieuto.backend.user_service.exception.TokenAlreadyInvalidatedException;
-import com.phuonghieuto.backend.user_service.exception.UserAlreadyExistException;
-import com.phuonghieuto.backend.user_service.exception.UserNotFoundException;
-import com.phuonghieuto.backend.user_service.exception.UserStatusNotValidException;
-import com.phuonghieuto.backend.user_service.model.common.CustomError;
+import com.phuonghieuto.backend.auth_service.exception.PasswordNotValidException;
+import com.phuonghieuto.backend.auth_service.exception.TokenAlreadyInvalidatedException;
+import com.phuonghieuto.backend.auth_service.exception.UserAlreadyExistException;
+import com.phuonghieuto.backend.auth_service.exception.UserNotFoundException;
+import com.phuonghieuto.backend.auth_service.exception.UserStatusNotValidException;
+import com.phuonghieuto.backend.auth_service.model.common.CustomError;
 
 import java.util.ArrayList;
 import java.util.List;

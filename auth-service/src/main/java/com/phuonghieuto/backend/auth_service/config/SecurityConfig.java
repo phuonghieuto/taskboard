@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.config;
+package com.phuonghieuto.backend.auth_service.config;
 
 import java.util.List;
 
@@ -21,8 +21,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.phuonghieuto.backend.user_service.filter.CustomBearerTokenAuthenticationFilter;
-import com.phuonghieuto.backend.user_service.security.CustomAuthenticationEntryPoint;
+import com.phuonghieuto.backend.auth_service.filter.CustomBearerTokenAuthenticationFilter;
+import com.phuonghieuto.backend.auth_service.security.CustomAuthenticationEntryPoint;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service;
+package com.phuonghieuto.backend.auth_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

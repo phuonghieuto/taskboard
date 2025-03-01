@@ -1,20 +1,20 @@
-package com.phuonghieuto.backend.user_service.service.impl;
+package com.phuonghieuto.backend.auth_service.service.impl;
 
-import com.phuonghieuto.backend.user_service.exception.PasswordNotValidException;
-import com.phuonghieuto.backend.user_service.exception.UserNotFoundException;
-import com.phuonghieuto.backend.user_service.exception.UserStatusNotValidException;
-import com.phuonghieuto.backend.user_service.model.Token;
-import com.phuonghieuto.backend.user_service.model.user.dto.request.LoginRequestDTO;
-import com.phuonghieuto.backend.user_service.model.user.dto.request.TokenInvalidateRequestDTO;
-import com.phuonghieuto.backend.user_service.model.user.dto.request.TokenRefreshRequestDTO;
-import com.phuonghieuto.backend.user_service.model.user.entity.UserEntity;
-import com.phuonghieuto.backend.user_service.model.user.enums.TokenClaims;
-import com.phuonghieuto.backend.user_service.model.user.enums.UserStatus;
-import com.phuonghieuto.backend.user_service.repository.UserRepository;
-import com.phuonghieuto.backend.user_service.service.AuthenticationService;
-import com.phuonghieuto.backend.user_service.service.TokenGenerationService;
-import com.phuonghieuto.backend.user_service.service.TokenManagementService;
-import com.phuonghieuto.backend.user_service.service.TokenValidationService;
+import com.phuonghieuto.backend.auth_service.exception.PasswordNotValidException;
+import com.phuonghieuto.backend.auth_service.exception.UserNotFoundException;
+import com.phuonghieuto.backend.auth_service.exception.UserStatusNotValidException;
+import com.phuonghieuto.backend.auth_service.model.Token;
+import com.phuonghieuto.backend.auth_service.model.user.dto.request.LoginRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.dto.request.TokenInvalidateRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.dto.request.TokenRefreshRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.entity.UserEntity;
+import com.phuonghieuto.backend.auth_service.model.user.enums.TokenClaims;
+import com.phuonghieuto.backend.auth_service.model.user.enums.UserStatus;
+import com.phuonghieuto.backend.auth_service.repository.UserRepository;
+import com.phuonghieuto.backend.auth_service.service.AuthenticationService;
+import com.phuonghieuto.backend.auth_service.service.TokenGenerationService;
+import com.phuonghieuto.backend.auth_service.service.TokenManagementService;
+import com.phuonghieuto.backend.auth_service.service.TokenValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

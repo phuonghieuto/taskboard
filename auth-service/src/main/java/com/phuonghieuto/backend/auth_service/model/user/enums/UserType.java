@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model.user.enums;
+package com.phuonghieuto.backend.auth_service.model.user.enums;
 
 /**
  * Represents the type of a user in the system.

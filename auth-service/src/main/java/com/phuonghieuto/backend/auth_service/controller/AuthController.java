@@ -1,15 +1,15 @@
-package com.phuonghieuto.backend.user_service.controller;
+package com.phuonghieuto.backend.auth_service.controller;
 
-import com.phuonghieuto.backend.user_service.model.Token;
-import com.phuonghieuto.backend.user_service.model.common.dto.response.CustomResponse;
-import com.phuonghieuto.backend.user_service.model.user.dto.request.LoginRequestDTO;
-import com.phuonghieuto.backend.user_service.model.user.dto.request.TokenInvalidateRequestDTO;
-import com.phuonghieuto.backend.user_service.model.user.dto.request.TokenRefreshRequestDTO;
-import com.phuonghieuto.backend.user_service.model.user.dto.response.TokenResponseDTO;
-import com.phuonghieuto.backend.user_service.model.user.mapper.TokenToTokenResponseMapper;
-import com.phuonghieuto.backend.user_service.service.AuthenticationService;
-import com.phuonghieuto.backend.user_service.service.TokenService;
-import com.phuonghieuto.backend.user_service.service.TokenValidationService;
+import com.phuonghieuto.backend.auth_service.model.Token;
+import com.phuonghieuto.backend.auth_service.model.common.dto.response.CustomResponse;
+import com.phuonghieuto.backend.auth_service.model.user.dto.request.LoginRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.dto.request.TokenInvalidateRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.dto.request.TokenRefreshRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.dto.response.TokenResponseDTO;
+import com.phuonghieuto.backend.auth_service.model.user.mapper.TokenToTokenResponseMapper;
+import com.phuonghieuto.backend.auth_service.service.AuthenticationService;
+import com.phuonghieuto.backend.auth_service.service.TokenService;
+import com.phuonghieuto.backend.auth_service.service.TokenValidationService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

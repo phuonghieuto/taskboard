@@ -1,10 +1,10 @@
-package com.phuonghieuto.backend.user_service.config;
+package com.phuonghieuto.backend.auth_service.config;
 
 import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
 
-import com.phuonghieuto.backend.user_service.model.user.enums.ConfigurationParameter;
-import com.phuonghieuto.backend.user_service.util.KeyConverter;
+import com.phuonghieuto.backend.auth_service.model.user.enums.ConfigurationParameter;
+import com.phuonghieuto.backend.auth_service.util.KeyConverter;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -17,15 +17,15 @@ import java.security.PublicKey;
 @Configuration
 public class TokenConfigurationParameter {
 
-    private final int accessTokenExpireDay;
+    private final int accessTokenExpireMinute;
     private final int refreshTokenExpireDay;
     private final PublicKey publicKey;
     private final PrivateKey privateKey;
 
     public TokenConfigurationParameter() {
 
-        this.accessTokenExpireDay = Integer.parseInt(
-                ConfigurationParameter.AUTH_ACCESS_TOKEN_EXPIRE_DAY.getDefaultValue()
+        this.accessTokenExpireMinute = Integer.parseInt(
+                ConfigurationParameter.AUTH_ACCESS_TOKEN_EXPIRE_MINUTE.getDefaultValue()
         );
 
         this.refreshTokenExpireDay = Integer.parseInt(

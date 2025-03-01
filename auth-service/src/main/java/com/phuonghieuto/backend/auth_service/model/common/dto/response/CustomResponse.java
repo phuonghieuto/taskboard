@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model.common.dto.response;
+package com.phuonghieuto.backend.auth_service.model.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

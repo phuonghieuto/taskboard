@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model.user.entity;
+package com.phuonghieuto.backend.auth_service.model.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,10 +7,10 @@ import lombok.experimental.SuperBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.phuonghieuto.backend.user_service.model.common.entity.BaseEntity;
-import com.phuonghieuto.backend.user_service.model.user.enums.TokenClaims;
-import com.phuonghieuto.backend.user_service.model.user.enums.UserStatus;
-import com.phuonghieuto.backend.user_service.model.user.enums.UserType;
+import com.phuonghieuto.backend.auth_service.model.common.entity.BaseEntity;
+import com.phuonghieuto.backend.auth_service.model.user.enums.TokenClaims;
+import com.phuonghieuto.backend.auth_service.model.user.enums.UserStatus;
+import com.phuonghieuto.backend.auth_service.model.user.enums.UserType;
 
 /**
  * Represents a user entity named {@link UserEntity} in the system.

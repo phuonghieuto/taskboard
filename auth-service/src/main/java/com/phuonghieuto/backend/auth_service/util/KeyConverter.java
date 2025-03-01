@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.util;
+package com.phuonghieuto.backend.auth_service.util;
 
 import lombok.experimental.UtilityClass;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;

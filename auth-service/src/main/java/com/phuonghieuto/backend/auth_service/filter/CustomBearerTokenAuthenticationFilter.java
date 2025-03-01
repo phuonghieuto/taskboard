@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.filter;
+package com.phuonghieuto.backend.auth_service.filter;
 
 import java.io.IOException;
 
@@ -8,10 +8,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.phuonghieuto.backend.user_service.model.Token;
-import com.phuonghieuto.backend.user_service.service.TokenManagementService;
-import com.phuonghieuto.backend.user_service.service.TokenService;
-import com.phuonghieuto.backend.user_service.service.TokenValidationService;
+import com.phuonghieuto.backend.auth_service.model.Token;
+import com.phuonghieuto.backend.auth_service.service.TokenManagementService;
+import com.phuonghieuto.backend.auth_service.service.TokenService;
+import com.phuonghieuto.backend.auth_service.service.TokenValidationService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

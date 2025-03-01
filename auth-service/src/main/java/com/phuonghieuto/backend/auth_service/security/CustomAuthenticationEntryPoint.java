@@ -1,8 +1,8 @@
-package com.phuonghieuto.backend.user_service.security;
+package com.phuonghieuto.backend.auth_service.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.phuonghieuto.backend.user_service.model.common.CustomError;
+import com.phuonghieuto.backend.auth_service.model.common.CustomError;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

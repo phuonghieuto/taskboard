@@ -1,8 +1,8 @@
-package com.phuonghieuto.backend.user_service.controller;
+package com.phuonghieuto.backend.auth_service.controller;
 
-import com.phuonghieuto.backend.user_service.model.common.dto.response.CustomResponse;
-import com.phuonghieuto.backend.user_service.model.user.dto.request.RegisterRequestDTO;
-import com.phuonghieuto.backend.user_service.service.UserService;
+import com.phuonghieuto.backend.auth_service.model.common.dto.response.CustomResponse;
+import com.phuonghieuto.backend.auth_service.model.user.dto.request.RegisterRequestDTO;
+import com.phuonghieuto.backend.auth_service.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

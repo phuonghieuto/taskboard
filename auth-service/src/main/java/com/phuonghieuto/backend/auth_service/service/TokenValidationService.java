@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.service;
+package com.phuonghieuto.backend.auth_service.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

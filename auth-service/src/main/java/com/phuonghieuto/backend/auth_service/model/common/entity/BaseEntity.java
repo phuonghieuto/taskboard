@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.model.common.entity;
+package com.phuonghieuto.backend.auth_service.model.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

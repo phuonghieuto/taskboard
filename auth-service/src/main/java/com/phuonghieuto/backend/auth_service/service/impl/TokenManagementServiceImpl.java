@@ -1,9 +1,9 @@
-package com.phuonghieuto.backend.user_service.service.impl;
+package com.phuonghieuto.backend.auth_service.service.impl;
 
-import com.phuonghieuto.backend.user_service.model.user.entity.InvalidTokenEntity;
-import com.phuonghieuto.backend.user_service.repository.InvalidTokenRepository;
-import com.phuonghieuto.backend.user_service.service.TokenManagementService;
-import com.phuonghieuto.backend.user_service.exception.TokenAlreadyInvalidatedException;
+import com.phuonghieuto.backend.auth_service.model.user.entity.InvalidTokenEntity;
+import com.phuonghieuto.backend.auth_service.repository.InvalidTokenRepository;
+import com.phuonghieuto.backend.auth_service.service.TokenManagementService;
+import com.phuonghieuto.backend.auth_service.exception.TokenAlreadyInvalidatedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;

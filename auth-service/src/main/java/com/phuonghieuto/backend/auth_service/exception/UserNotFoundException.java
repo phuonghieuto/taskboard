@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.user_service.exception;
+package com.phuonghieuto.backend.auth_service.exception;
 
 import java.io.Serial;
 
