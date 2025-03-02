@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,11 +24,13 @@ import com.phuonghieuto.backend.task_service.filter.CustomBearerTokenAuthenticat
 import com.phuonghieuto.backend.task_service.security.CustomAuthenticationEntryPoint;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 @EnableMethodSecurity
+@Slf4j
 public class SecurityConfig {
 
     @Bean
@@ -41,21 +42,22 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(
             final HttpSecurity httpSecurity,
             final CustomBearerTokenAuthenticationFilter customBearerTokenAuthenticationFilter,
-            final CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+            final CustomAuthenticationEntryPoint customAuthenticationEntryPoint
+    ) throws Exception {
+
+        log.debug("Configuring Security Filter Chain");
 
         httpSecurity
                 .exceptionHandling(customizer -> customizer.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .cors(customizer -> customizer.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(customizer -> customizer
-                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/users/**").permitAll()
-                        .requestMatchers("/auth/api-docs/**", "/auth/swagger-ui.html/**", "/auth/swagger-ui/**")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/auth/authenticate").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(customBearerTokenAuthenticationFilter, BearerTokenAuthenticationFilter.class);
+
+        log.debug("CustomBearerTokenAuthenticationFilter added to the filter chain");
 
         return httpSecurity.build();
     }

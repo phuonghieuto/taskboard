@@ -70,7 +70,11 @@ public class CustomError {
 
         PROCESS_ERROR("PROCESS ERROR"),
 
-        AUTH_ERROR("AUTH ERROR");
+        AUTH_ERROR("AUTH ERROR"),
+
+        BOARD_NOT_FOUND("BOARD_NOT_FOUND"),
+
+        UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS");
 
 
         private final String name;

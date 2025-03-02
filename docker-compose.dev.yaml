@@ -69,6 +69,8 @@ services:
     env_file:
       - .env
     container_name: auth-service
+    volumes:
+      - ./keys:/app/keys
 
   task-service:
     build:
@@ -84,6 +86,8 @@ services:
     env_file:
       - .env
     container_name: task-service
+    volumes:
+      - ./keys:/app/keys
 
   # notification-service:
   #   build:

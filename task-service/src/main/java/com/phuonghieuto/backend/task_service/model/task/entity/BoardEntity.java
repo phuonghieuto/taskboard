@@ -32,4 +32,7 @@ public class BoardEntity extends BaseEntity {
     @CollectionTable(name = "board_users", joinColumns = @JoinColumn(name = "BOARD_ID"))
     @Column(name = "USER_ID")
     private Set<String> collaboratorIds;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TableEntity> tables;
 }

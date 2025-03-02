@@ -1,0 +1,24 @@
+package com.phuonghieuto.backend.task_service.model;
+
+import com.phuonghieuto.backend.task_service.model.common.BaseDomainModel;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+@Getter
+@Setter
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+public class Task extends BaseDomainModel{
+    private String id;
+    private String title;
+    private String description;
+    private Table table;
+    private String assignedUserId;
+    private int orderIndex;
+    
+}

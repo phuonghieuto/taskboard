@@ -25,6 +25,9 @@ public class TableEntity extends BaseEntity {
     @Column(name = "NAME")
     private String name;
 
+    @Column(name = "ORDER_INDEX")
+    private int orderIndex;
+
     @ManyToOne
     @JoinColumn(name = "BOARD_ID")
     private BoardEntity board;

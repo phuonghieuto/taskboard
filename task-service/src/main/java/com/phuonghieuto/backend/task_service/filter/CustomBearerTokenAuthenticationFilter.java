@@ -1,6 +1,5 @@
 package com.phuonghieuto.backend.task_service.filter;
 
-import feign.FeignException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,39 +13,27 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.phuonghieuto.backend.task_service.client.AuthServiceClient;
 import com.phuonghieuto.backend.task_service.model.auth.Token;
+import com.phuonghieuto.backend.task_service.service.TokenService;
 
+import feign.FeignException;
 import java.io.IOException;
 
 /**
- * Custom filter named {@link CustomBearerTokenAuthenticationFilter} for handling Bearer token authentication in HTTP requests.
- * This filter extracts the Bearer token from the Authorization header,
- * validates it, and sets the authentication context if the token is valid.
+ * Custom filter for handling Bearer token authentication in HTTP requests.
+ * Uses a hybrid approach with local validation and remote invalidation check.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class CustomBearerTokenAuthenticationFilter extends OncePerRequestFilter {
 
+    private final TokenService tokenService;
     private final AuthServiceClient authServiceClient;
 
-    /**
-     * Processes the incoming HTTP request and performs Bearer token authentication.
-     *
-     * <p>Extracts the Bearer token from the Authorization header, validates the token using
-     * {@link AuthServiceClient#validateToken(String)}, and sets the authentication context
-     * if the token is valid. If validation fails, sets the appropriate HTTP status and
-     * writes an error message to the response. The filter chain proceeds regardless of
-     * token validation success or failure.</p>
-     *
-     * @param httpServletRequest the HTTP request
-     * @param httpServletResponse the HTTP response
-     * @param filterChain the filter chain to proceed with
-     * @throws ServletException if an error occurs during filtering
-     * @throws IOException if an I/O error occurs during filtering
-     */
     @Override
     protected void doFilterInternal(@NonNull final HttpServletRequest httpServletRequest,
                                     @NonNull final HttpServletResponse httpServletResponse,
@@ -60,33 +47,42 @@ public class CustomBearerTokenAuthenticationFilter extends OncePerRequestFilter 
             final String jwt = Token.getJwt(authorizationHeader);
 
             try {
-                // Validate the token synchronously
-                authServiceClient.validateToken(jwt);
+                // Step 1: Local validation (signature, expiration)
+                tokenService.validateToken(jwt);
+                
+                // Step 2: Check if token has been invalidated with auth-service
+                try {
+                    authServiceClient.validateToken(jwt);
+                } catch (FeignException e) {
+                    log.error("Token invalidation check failed: {}", e.getMessage());
+                    httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    httpServletResponse.getWriter().write("Token has been invalidated");
+                    return;
+                }
+                
                 log.debug("Token validation succeeded for request: {}", httpServletRequest.getRequestURI());
 
-                // Get the authentication object
-                final UsernamePasswordAuthenticationToken authentication = authServiceClient.getAuthentication(jwt);
-
+                // Step 3: Get authentication from local token parsing
+                final UsernamePasswordAuthenticationToken authentication = tokenService.getAuthentication(jwt);
+                
                 // Set authentication to SecurityContextHolder
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            } catch (FeignException e) {
-                log.error("Token validation failed for request: {}", httpServletRequest.getRequestURI(), e);
-
-                // Handle the error response
-                if (e instanceof FeignException.Unauthorized || e instanceof FeignException.Forbidden) {
-                    httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-                } else {
-                    httpServletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-                }
-                httpServletResponse.getWriter().write(e.getMessage());
+            } catch (ResponseStatusException e) {
+                log.error("Local token validation failed: {}", e.getMessage());
+                httpServletResponse.setStatus(e.getStatusCode().value());
+                httpServletResponse.getWriter().write(e.getReason());
+                return;
+            } catch (Exception e) {
+                log.error("Token processing failed: {}", e.getMessage());
+                httpServletResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                httpServletResponse.getWriter().write("Internal server error during token processing");
+                return;
             }
         } else {
             log.warn("Missing or invalid Authorization header for request: {}", httpServletRequest.getRequestURI());
         }
 
-        // Proceed with the filter chain in any case
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
-
 }
