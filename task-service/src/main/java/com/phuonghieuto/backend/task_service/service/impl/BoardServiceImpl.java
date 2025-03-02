@@ -2,6 +2,7 @@ package com.phuonghieuto.backend.task_service.service.impl;
 
 import com.phuonghieuto.backend.task_service.exception.BoardNotFoundException;
 import com.phuonghieuto.backend.task_service.exception.UnauthorizedAccessException;
+import com.phuonghieuto.backend.task_service.model.auth.enums.TokenClaims;
 import com.phuonghieuto.backend.task_service.model.task.dto.request.BoardRequestDTO;
 import com.phuonghieuto.backend.task_service.model.task.dto.response.BoardResponseDTO;
 import com.phuonghieuto.backend.task_service.model.task.entity.BoardEntity;
@@ -49,8 +50,6 @@ public class BoardServiceImpl implements BoardService {
 
     @Override
     public List<BoardResponseDTO> getAllBoardsByUserId(String userId) {
-        String currentUserId = getCurrentUserId();
-        
         // Find boards where user is owner or collaborator
         List<BoardEntity> boards = boardRepository.findByOwnerIdOrCollaboratorIdsContains(userId, userId);
         
@@ -95,7 +94,7 @@ public class BoardServiceImpl implements BoardService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
             Jwt jwt = (Jwt) authentication.getPrincipal();
-            return jwt.getClaim("userId");
+            return jwt.getClaim(TokenClaims.USER_ID.getValue());
         }
         throw new UnauthorizedAccessException("User not authenticated");
     }

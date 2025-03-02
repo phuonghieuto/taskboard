@@ -16,9 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public class FileKeyProvider {
     
-    @Value("${auth.keys.public-key-path:${AUTH_PUBLIC_KEY_PATH:keys/public.pem}}")
+    @Value("${auth.keys.public-key-path:${AUTH_PUBLIC_KEY_PATH:/app/keys/public.pem}}")
     private String publicKeyPath;
-    @Value("${auth.keys.private-key-path:${AUTH_PRIVATE_KEY_PATH:keys/private.pem}}")
+    
+    @Value("${auth.keys.private-key-path:${AUTH_PRIVATE_KEY_PATH:/app/keys/private.pem}}")
     private String privateKeyPath;
     
     private String publicKey;
@@ -27,6 +28,7 @@ public class FileKeyProvider {
     @PostConstruct
     public void init() {
         try {
+            log.info("Loading keys from paths: public={}, private={}", publicKeyPath, privateKeyPath);
             publicKey = readFileContent(publicKeyPath);
             privateKey = readFileContent(privateKeyPath);
             log.info("Successfully loaded keys from files");
@@ -38,6 +40,7 @@ public class FileKeyProvider {
     
     private String readFileContent(String path) throws Exception {
         Path filePath = Paths.get(path);
+        log.debug("Attempting to read file from: {}, exists: {}", filePath.toAbsolutePath(), Files.exists(filePath));
         return Files.readString(filePath);
     }
 }

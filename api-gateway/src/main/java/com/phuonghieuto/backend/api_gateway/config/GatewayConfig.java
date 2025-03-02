@@ -33,6 +33,18 @@ public class GatewayConfig {
                                                 f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
                                                                 .setPublicEndpoints(PUBLIC_ENDPOINTS))))
                                                 .uri("lb://task-service"))
+                                .route("task-service", r -> r.path("/api/v1/boards/**").filters(
+                                                f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
+                                                                .setPublicEndpoints(PUBLIC_ENDPOINTS))))
+                                                .uri("lb://task-service"))
+                                .route("task-service", r -> r.path("/api/v1/tables/**").filters(
+                                                f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
+                                                                .setPublicEndpoints(PUBLIC_ENDPOINTS))))
+                                                .uri("lb://task-service"))
+                                .route("task-service", r -> r.path("/api/v1/tasks/**").filters(
+                                                f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
+                                                                .setPublicEndpoints(PUBLIC_ENDPOINTS))))
+                                                .uri("lb://task-service"))
                                 .build();
         }
 }

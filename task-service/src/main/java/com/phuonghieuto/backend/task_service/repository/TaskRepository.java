@@ -9,4 +9,5 @@ import com.phuonghieuto.backend.task_service.model.task.entity.TaskEntity;
 @Repository
 public interface TaskRepository extends JpaRepository<TaskEntity, String> {
     List<TaskEntity> findByTableIdOrderByOrderIndexAsc(String tableId);
+    List<TaskEntity> findByAssignedUserId(String assignedUserId);
 }

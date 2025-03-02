@@ -9,4 +9,5 @@ import com.phuonghieuto.backend.task_service.model.task.entity.TableEntity;
 @Repository
 public interface TableRepository extends JpaRepository<TableEntity, String> {
     List<TableEntity> findByBoardIdOrderByOrderIndexAsc(String boardId);
+    int countByBoardId(String boardId);
 }

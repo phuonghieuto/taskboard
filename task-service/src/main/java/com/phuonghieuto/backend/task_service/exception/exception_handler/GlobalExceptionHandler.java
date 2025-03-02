@@ -1,6 +1,8 @@
 package com.phuonghieuto.backend.task_service.exception.exception_handler;
 
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.phuonghieuto.backend.task_service.exception.BoardNotFoundException;
+import com.phuonghieuto.backend.task_service.exception.TableNotFoundException;
 import com.phuonghieuto.backend.task_service.exception.TokenAlreadyInvalidatedException;
 import com.phuonghieuto.backend.task_service.exception.UnauthorizedAccessException;
 import com.phuonghieuto.backend.task_service.model.common.CustomError;
@@ -23,6 +26,7 @@ import java.util.List;
  * various types of exceptions in the application.
  */
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
         /**
@@ -129,6 +133,18 @@ public class GlobalExceptionHandler {
         public CustomError handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
                 return CustomError.builder().header(CustomError.Header.UNAUTHORIZED_ACCESS.getName())
                                 .httpStatus(HttpStatus.FORBIDDEN).isSuccess(false).message(ex.getMessage()).build();
+        }
+
+        @ExceptionHandler(TableNotFoundException.class)
+        @ResponseStatus(HttpStatus.NOT_FOUND)
+        public CustomError handleTableNotFoundException(TableNotFoundException ex) {
+            log.error("Table not found: {}", ex.getMessage());
+            return CustomError.builder()
+                    .header(CustomError.Header.TABLE_NOT_FOUND.getName())
+                    .httpStatus(HttpStatus.NOT_FOUND)
+                    .isSuccess(false)
+                    .message(ex.getMessage())
+                    .build();
         }
 
 }

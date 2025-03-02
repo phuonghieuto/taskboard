@@ -1,17 +1,17 @@
 package com.phuonghieuto.backend.task_service.model.task.dto.response;
 
 import lombok.*;
-import java.util.Set;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TableResponseDTO {
+public class TaskResponseDTO {
     private String id;
-    private String name;
+    private String title;
+    private String description;
     private int orderIndex;
-    private String boardId;
-    private Set<TaskResponseDTO> tasks;
+    private String tableId;
+    private String assignedUserId;
 }

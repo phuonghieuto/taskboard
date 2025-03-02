@@ -63,7 +63,7 @@ springdoc:
         name: API Gateway
       - url: http://localhost:8081/api/v1/auth/api-docs
         name: Auth Service
-      # - url: http://localhost:8083/v1/tasks/v3/api-docs
-      #   name: Task Service
+      - url: http://localhost:8082/api/v1/tasks/api-docs
+        name: Task Service
       # - url: http://localhost:8084/v1/notifications/v3/api-docs
       #   name: Notification Service

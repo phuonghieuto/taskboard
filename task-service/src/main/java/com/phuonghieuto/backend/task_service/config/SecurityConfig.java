@@ -51,7 +51,8 @@ public class SecurityConfig {
                 .exceptionHandling(customizer -> customizer.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .cors(customizer -> customizer.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(customizer -> customizer
+                .authorizeHttpRequests(customizer -> customizer.requestMatchers("/tasks/api-docs/**", "/tasks/swagger-ui.html/**", "/tasks/swagger-ui/**")
+                .permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
