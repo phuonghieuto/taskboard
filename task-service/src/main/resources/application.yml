@@ -9,7 +9,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate.format_sql: true
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -20,7 +20,8 @@ logging:
   level:
     org:
       hibernate:
-        SQL: DEBUG
+        SQL: OFF
+        type: OFF
       springframework:
         web: DEBUG
         data: DEBUG
@@ -30,10 +31,29 @@ logging:
               rest: DEBUG
             orm: DEBUG
         security: DEBUG
+    root: INFO
+  # Modify pattern to exclude stack traces
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  # Add exception conversion word to omit stack traces
+  exception-conversion-word: "%wEx{short}"
+  logback:
+    rollingpolicy:
+      max-history: 7
+      max-file-size: 10MB
+
+# Configure exception handling to not include stack traces
 server:
   port: 8082
   servlet:
     context-path: /api/v1
+  error:
+    include-stacktrace: never
+    include-message: always
+    include-binding-errors: never
+    whitelabel:
+      enabled: false
 
 eureka:
   client:

@@ -15,11 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.phuonghieuto.backend.task_service.client.AuthServiceClient;
 import com.phuonghieuto.backend.task_service.model.auth.Token;
 import com.phuonghieuto.backend.task_service.service.TokenService;
 
-import feign.FeignException;
 import java.io.IOException;
 
 /**
@@ -32,7 +30,6 @@ import java.io.IOException;
 public class CustomBearerTokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
-    private final AuthServiceClient authServiceClient;
 
     @Override
     protected void doFilterInternal(@NonNull final HttpServletRequest httpServletRequest,
@@ -49,20 +46,9 @@ public class CustomBearerTokenAuthenticationFilter extends OncePerRequestFilter 
             try {
                 // Step 1: Local validation (signature, expiration)
                 tokenService.validateToken(jwt);
-                
-                // Step 2: Check if token has been invalidated with auth-service
-                try {
-                    authServiceClient.validateToken(jwt);
-                } catch (FeignException e) {
-                    log.error("Token invalidation check failed: {}", e.getMessage());
-                    httpServletResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    httpServletResponse.getWriter().write("Token has been invalidated");
-                    return;
-                }
-                
                 log.debug("Token validation succeeded for request: {}", httpServletRequest.getRequestURI());
 
-                // Step 3: Get authentication from local token parsing
+                // Step 2: Get authentication from local token parsing
                 final UsernamePasswordAuthenticationToken authentication = tokenService.getAuthentication(jwt);
                 
                 // Set authentication to SecurityContextHolder

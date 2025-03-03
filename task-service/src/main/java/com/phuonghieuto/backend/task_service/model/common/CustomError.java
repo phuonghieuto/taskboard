@@ -76,6 +76,8 @@ public class CustomError {
 
         TABLE_NOT_FOUND("TABLE_NOT_FOUND"),
 
+        TASK_NOT_FOUND("TASK_NOT_FOUND"),
+
         UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS");
 
 

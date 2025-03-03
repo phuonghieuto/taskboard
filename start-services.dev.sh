@@ -12,15 +12,15 @@ exec 2>&1
 
 # Stop all containers and remove volumes
 echo "Stopping all containers..."
-docker-compose -f docker-compose.dev.yaml down -v
+docker-compose -f docker-compose.dev.yaml down
 
-# Remove the postgres volume explicitly
-echo "Removing PostgreSQL volume..."
-docker volume rm postgres_data || true
+# # Remove the postgres volume explicitly
+# echo "Removing PostgreSQL volume..."
+# docker volume rm postgres_data || true
 
-# Prune unused volumes
-echo "Pruning unused volumes..."
-docker volume prune -f
+# # Prune unused volumes
+# echo "Pruning unused volumes..."
+# docker volume prune -f
 
 # Build the services
 echo "Building services..."

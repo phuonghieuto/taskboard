@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = {"table"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
