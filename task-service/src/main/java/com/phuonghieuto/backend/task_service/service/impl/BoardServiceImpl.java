@@ -6,7 +6,6 @@ import com.phuonghieuto.backend.task_service.model.auth.enums.TokenClaims;
 import com.phuonghieuto.backend.task_service.model.task.dto.request.BoardRequestDTO;
 import com.phuonghieuto.backend.task_service.model.task.dto.response.BoardResponseDTO;
 import com.phuonghieuto.backend.task_service.model.task.entity.BoardEntity;
-import com.phuonghieuto.backend.task_service.model.task.entity.TableEntity;
 import com.phuonghieuto.backend.task_service.model.task.mapper.BoardEntityToBoardResponseMapper;
 import com.phuonghieuto.backend.task_service.model.task.mapper.BoardRequestToBoardEntityMapper;
 import com.phuonghieuto.backend.task_service.repository.BoardRepository;

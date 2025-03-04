@@ -13,7 +13,44 @@ spring:
     properties:
       hibernate.format_sql: true
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 5000
+          max-attempts: 3
+          max-interval: 10000
+          multiplier: 2
 
+# RabbitMQ queue and exchange names
+rabbitmq:
+  queue:
+    notification: notification.queue
+    email: email.queue
+    dead-letter: notification.deadletter.queue
+  exchange: notification.exchange
+  exchange.dead-letter: notification.deadletter.exchange
+  routing-key:
+    notification: notification.routing.key
+    email: email.routing.key
+    dead-letter: deadletter.routing.key
+    
 logging:
   file:
     name: src/main/resources/script/stage_log.log

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Board Invitation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .header {
+            background-color: #4285f4;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background-color: white;
+            border-radius: 0 0 5px 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4285f4;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Task Management System</h1>
+        </div>
+        <div class="content">
+            <h2>Board Invitation</h2>
+            <p>Hello,</p>
+            <p th:text="${inviterName} + ' has invited you to collaborate on the board: ' + ${boardName}">User has invited you to collaborate on a board</p>
+            <p>Click the button below to view the board:</p>
+            <a th:href="${boardUrl}" class="button">View Board</a>
+            <p>If you have any questions, please contact us.</p>
+            <p>Best regards,<br>Task Management Team</p>
+        </div>
+    </div>
+</body>
+</html>
