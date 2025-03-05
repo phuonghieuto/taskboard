@@ -6,7 +6,7 @@ import com.phuonghieuto.backend.auth_service.model.user.dto.request.TokenInvalid
 import com.phuonghieuto.backend.auth_service.model.user.dto.request.TokenRefreshRequestDTO;
 
 public interface AuthenticationService {
-    Token login(LoginRequestDTO loginRequest);
-    Token refreshToken(TokenRefreshRequestDTO tokenRefreshRequest);
+    TokenResponseDTO login(LoginRequestDTO loginRequest);
+    TokenResponseDTO refreshToken(TokenRefreshRequestDTO tokenRefreshRequest);
     void logout(TokenInvalidateRequestDTO tokenInvalidateRequest);
 }

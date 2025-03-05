@@ -1,13 +1,15 @@
-package com.phuonghieuto.backend.auth_service.model.common;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+package com.phuonghieuto.backend.api_gateway.model.common;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.http.HttpStatus;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Represents a custom error response named {@link CustomError} structure for REST APIs.
@@ -17,20 +19,20 @@ import java.util.List;
 public class CustomError {
 
     @Builder.Default
-    private LocalDateTime time = LocalDateTime.now();
+    private final LocalDateTime time = LocalDateTime.now();
 
-    private HttpStatus httpStatus;
+    private final HttpStatus httpStatus;
 
-    private String header;
+    private final String header;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String message;
+    private final String message;
 
     @Builder.Default
     private final Boolean isSuccess = false;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<CustomSubError> subErrors;
+    private final List<CustomSubError> subErrors;
 
     /**
      * Represents a sub-error with specific details as {@link CustomSubError}.
@@ -39,15 +41,15 @@ public class CustomError {
     @Builder
     public static class CustomSubError {
 
-        private String message;
+        private final String message;
 
-        private String field;
-
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        private Object value;
+        private final String field;
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        private String type;
+        private final Object value;
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        private final String type;
 
     }
 

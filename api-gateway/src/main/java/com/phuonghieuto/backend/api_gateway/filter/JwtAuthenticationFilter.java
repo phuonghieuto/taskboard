@@ -4,72 +4,56 @@ import java.util.List;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.phuonghieuto.backend.api_gateway.client.AuthServiceClient;
 import com.phuonghieuto.backend.api_gateway.model.Token;
+import com.phuonghieuto.backend.api_gateway.model.common.CustomError;
 
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-/**
- * A custom Gateway filter named {@link JwtAuthenticationFilter} that handles JWT authentication for requests.
- * This filter validates JWT tokens for all requests except those to public endpoints.
- */
+// Custom Gateway filter to authenticate requests using JWT tokens
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAuthenticationFilter.Config> {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+    private final AuthServiceClient authServiceClient;
 
-    public JwtAuthenticationFilter() {
+    public JwtAuthenticationFilter(AuthServiceClient authServiceClient) {
         super(Config.class);
+        this.authServiceClient = authServiceClient;
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
     }
-
-    /**
-     * Configuration class for JwtAuthenticationFilter.
-     * It holds a list of public endpoints that should not be filtered.
-     */
+    
     public static class Config {
         // List of public endpoints that should not be filtered
         private List<String> publicEndpoints;
 
-        /**
-         * Gets the list of public endpoints.
-         *
-         * @return the list of public endpoints
-         */
         public List<String> getPublicEndpoints() {
             return publicEndpoints;
         }
 
-        /**
-         * Sets the list of public endpoints.
-         *
-         * @param publicEndpoints the list of public endpoints to set
-         * @return the updated Config object
-         */
         public Config setPublicEndpoints(List<String> publicEndpoints) {
             this.publicEndpoints = publicEndpoints;
             return this;
         }
     }
 
-    /**
-     * Applies the JWT authentication filter to the gateway.
-     *
-     * @param config the configuration for the filter
-     * @return the gateway filter
-     */
+    // Apply jwt authentication filter to incoming requests
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
@@ -85,10 +69,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             if (Token.isBearerToken(authorizationHeader)) {
                 String jwt = Token.getJwt(authorizationHeader);
 
-                // Inject authServiceClient here
-                ApplicationContext context = exchange.getApplicationContext();
-                AuthServiceClient authServiceClient = context.getBean(AuthServiceClient.class);
-
+                // Validate token using auth-service
                 return Mono.fromCallable(() -> {
                             authServiceClient.validateToken(jwt);
                             log.debug("Token validation succeeded for path: {}", path);
@@ -99,32 +80,36 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                         .onErrorResume(e -> {
                             log.error("Token validation failed for path: {}: {}", path, e.getMessage());
                             
-                            HttpStatus status = HttpStatus.UNAUTHORIZED; // Default to 401 for auth errors
-                            String errorMessage = "Authentication failed";
-                            String errorHeader = "AUTH_ERROR";
+                            HttpStatus status;
+                            String errorMessage;
+                            String errorHeader = CustomError.Header.AUTH_ERROR.getName();
                             
                             // Handle different types of exceptions
-                            if (e instanceof FeignException) {
-                                FeignException feignException = (FeignException) e;
+                            if (e instanceof FeignException feignException) {
                                 int statusCode = feignException.status();
                                 
                                 // Map specific status codes from auth-service
-                                if (statusCode == 401 || statusCode == 403) {
-                                    // Token is expired or invalid
-                                    status = HttpStatus.UNAUTHORIZED;
-                                    errorMessage = "Token is expired or invalid";
-                                } else if (statusCode == 400) {
-                                    // Bad request - likely invalid token format
-                                    status = HttpStatus.BAD_REQUEST;
-                                    errorMessage = "Invalid token format";
-                                } else if (statusCode == 404) {
-                                    // Not found - likely endpoint not found
-                                    status = HttpStatus.UNAUTHORIZED;  // Override 404 with 401 for security
-                                    errorMessage = "Authentication failed";
-                                } else {
-                                    // Other error codes
-                                    status = HttpStatus.valueOf(statusCode);
-                                    errorMessage = "Authentication error";
+                                switch (statusCode) {
+                                    case 401, 403 -> {
+                                        // Token is expired or invalid
+                                        status = HttpStatus.UNAUTHORIZED;
+                                        errorMessage = "Token is expired or invalid";
+                                    }
+                                    case 400 -> {
+                                        // Bad request - likely invalid token format
+                                        status = HttpStatus.BAD_REQUEST;
+                                        errorMessage = "Invalid token format";
+                                    }
+                                    case 404 -> {
+                                        // Not found - likely endpoint not found
+                                        status = HttpStatus.UNAUTHORIZED;  // Override 404 with 401 for security
+                                        errorMessage = "Unauthorized";
+                                    }
+                                    default -> {
+                                        // Other error codes
+                                        status = HttpStatus.valueOf(statusCode);
+                                        errorMessage = "Authentication error";
+                                    }
                                 }
                                 
                                 // Try to extract more specific error message if available
@@ -138,7 +123,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                                         if (jsonNode.has("header")) {
                                             errorHeader = jsonNode.get("header").asText();
                                         }
-                                    } catch (Exception ex) {
+                                    } catch (JsonProcessingException ex) {
                                         log.warn("Could not parse error response: {}", errorBody);
                                     }
                                 }
@@ -149,53 +134,49 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                                 errorMessage = "Unexpected authentication error";
                             }
 
-                            // Always log the actual status being returned to client
                             log.debug("Returning status {} to client with message: {}", status, errorMessage);
-
-                            // Set response status
-                            exchange.getResponse().setStatusCode(status);
-                            exchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-
-                            // Create error response body
-                            ObjectNode errorResponse = objectMapper.createObjectNode();
-                            errorResponse.put("header", errorHeader);
-                            errorResponse.put("isSuccess", false);
-                            errorResponse.put("message", errorMessage);
-                            errorResponse.put("httpStatus", status.value());
-
-                            byte[] responseBytes;
-                            try {
-                                responseBytes = objectMapper.writeValueAsBytes(errorResponse);
-                            } catch (Exception jsonException) {
-                                log.error("Error serializing error response", jsonException);
-                                responseBytes = "{\"error\":\"Authentication error\"}".getBytes();
-                            }
-
-                            DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(responseBytes);
-                            return exchange.getResponse().writeWith(Mono.just(buffer));
+                            
+                            CustomError customError = CustomError.builder()
+                                .httpStatus(status)
+                                .header(errorHeader)
+                                .message(errorMessage)
+                                .build();
+                            
+                            return createErrorResponse(exchange.getResponse(), customError);
                         });
             }
             
             // No token provided but required
             log.warn("Missing or invalid Authorization header for path: {}", path);
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            exchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
             
-            // Create error response for missing token
-            ObjectNode errorResponse = objectMapper.createObjectNode();
-            errorResponse.put("header", "AUTH_ERROR");
-            errorResponse.put("isSuccess", false);
-            errorResponse.put("message", "Authentication required");
-            errorResponse.put("httpStatus", HttpStatus.UNAUTHORIZED.value());
-            
-            try {
-                byte[] responseBytes = objectMapper.writeValueAsBytes(errorResponse);
-                DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(responseBytes);
-                return exchange.getResponse().writeWith(Mono.just(buffer));
-            } catch (Exception jsonException) {
-                log.error("Error creating error response", jsonException);
-                return exchange.getResponse().setComplete();
-            }
+            CustomError customError = CustomError.builder()
+                .httpStatus(HttpStatus.UNAUTHORIZED)
+                .header(CustomError.Header.AUTH_ERROR.getName())
+                .message("Authentication required")
+                .build();
+                
+            return createErrorResponse(exchange.getResponse(), customError);
         };
+    }
+    
+    /**
+     * Creates a standardized error response with the CustomError format
+     *
+     * @param response The ServerHttpResponse to write to
+     * @param customError The error details
+     * @return Mono<Void> representing the completion of the response write
+     */
+    private Mono<Void> createErrorResponse(ServerHttpResponse response, CustomError customError) {
+        response.setStatusCode(customError.getHttpStatus());
+        response.getHeaders().add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+        
+        try {
+            byte[] responseBytes = objectMapper.writeValueAsBytes(customError);
+            DataBuffer buffer = response.bufferFactory().wrap(responseBytes);
+            return response.writeWith(Mono.just(buffer));
+        } catch (JsonProcessingException jsonException) {
+            log.error("Error creating error response", jsonException);
+            return response.setComplete();
+        }
     }
 }

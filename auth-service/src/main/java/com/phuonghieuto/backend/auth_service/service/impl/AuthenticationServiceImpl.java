@@ -32,9 +32,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final TokenGenerationService tokenGenerationService;
     private final TokenValidationService tokenValidationService;
     private final TokenManagementService tokenManagementService;
+    private final TokenToTokenResponseMapper tokenToTokenResponseMapper = TokenToTokenResponseMapper.initialize();
 
     @Override
-    public Token login(LoginRequestDTO loginRequest) {
+    public TokenResponseDTO login(LoginRequestDTO loginRequest) {
         final UserEntity userEntityFromDB = userRepository
                 .findUserEntityByEmail(loginRequest.getEmail())
                 .orElseThrow(
@@ -46,11 +47,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new PasswordNotValidException();
         }
 
-        return tokenGenerationService.generateToken(userEntityFromDB.getClaims());
+        Token token = tokenGenerationService.generateToken(userEntityFromDB.getClaims());
+        TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
+        return tokenResponse
     }
 
     @Override
-    public Token refreshToken(TokenRefreshRequestDTO tokenRefreshRequest) {
+    public TokenResponseDTO refreshToken(TokenRefreshRequestDTO tokenRefreshRequest) {
 
         tokenValidationService.verifyAndValidate(tokenRefreshRequest.getRefreshToken());
 
@@ -65,10 +68,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         validateUserStatus(userEntityFromDB);
 
-        return tokenGenerationService.generateToken(
+        Token token tokenGenerationService.generateToken(
                 userEntityFromDB.getClaims(),
                 tokenRefreshRequest.getRefreshToken()
         );
+
+        TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
+        return tokenResponse
     }
 
     @Override

@@ -33,8 +33,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
     private final TokenValidationService tokenValidationService;
     private final TokenService tokenService;
-    private final TokenToTokenResponseMapper tokenToTokenResponseMapper = TokenToTokenResponseMapper.initialize();
-
+    
     @Operation(summary = "Login a user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User logged in successfully", content = @Content(schema = @Schema(implementation = TokenResponseDTO.class))),
@@ -43,8 +42,7 @@ public class AuthController {
     @PostMapping("/login")
     public CustomResponse<TokenResponseDTO> loginUser(@RequestBody @Valid final LoginRequestDTO loginRequest) {
         log.info("AuthController | loginUser");
-        final Token token = authenticationService.login(loginRequest);
-        final TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
+        final TokenResponseDTO tokenResponse = authenticationService.login(loginRequest);
         return CustomResponse.successOf(tokenResponse);
     }
 
@@ -56,8 +54,7 @@ public class AuthController {
     @PostMapping("/refresh-token")
     public CustomResponse<TokenResponseDTO> refreshToken(@RequestBody @Valid final TokenRefreshRequestDTO tokenRefreshRequest) {
         log.info("AuthController | refreshToken");
-        final Token token = authenticationService.refreshToken(tokenRefreshRequest);
-        final TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
+        final TokenResponseDTO tokenResponse = authenticationService.refreshToken(tokenRefreshRequest);
         return CustomResponse.successOf(tokenResponse);
     }
 

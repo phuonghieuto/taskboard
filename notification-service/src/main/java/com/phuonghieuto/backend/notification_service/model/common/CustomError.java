@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.auth_service.model.common;
+package com.phuonghieuto.backend.notification_service.model.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
@@ -70,7 +70,16 @@ public class CustomError {
 
         PROCESS_ERROR("PROCESS ERROR"),
 
-        AUTH_ERROR("AUTH ERROR");
+        AUTH_ERROR("AUTH ERROR"),
+
+        BOARD_NOT_FOUND("BOARD_NOT_FOUND"),
+
+        TABLE_NOT_FOUND("TABLE_NOT_FOUND"),
+
+        TASK_NOT_FOUND("TASK_NOT_FOUND"),
+
+        UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS");
+
 
         private final String name;
 

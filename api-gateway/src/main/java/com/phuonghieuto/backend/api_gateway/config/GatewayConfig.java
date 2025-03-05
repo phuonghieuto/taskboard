@@ -16,8 +16,11 @@ import lombok.RequiredArgsConstructor;
 public class GatewayConfig {
 
         private final JwtAuthenticationFilter jwtAuthFilter;
+
+        // Public endpoints that do not require authentication
         private static final List<String> PUBLIC_ENDPOINTS = List.of("/api/v1/users/register", "/api/v1/auth/login",
-                        "/api/v1/auth/refresh-token", "/api/v1/auth/logout", "/api/v1/auth/validate-token", "/api/v1/auth/authenticate");
+                        "/api/v1/auth/refresh-token", "/api/v1/auth/logout", "/api/v1/auth/validate-token",
+                        "/api/v1/auth/authenticate");
 
         @Bean
         public RouteLocator routes(RouteLocatorBuilder builder) {
