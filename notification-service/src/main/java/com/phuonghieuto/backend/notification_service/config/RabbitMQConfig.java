@@ -5,107 +5,40 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
 
-    @Value("${rabbitmq.queue.notification}")
-    private String notificationQueue;
+    public static final String QUEUE_TASK_NOTIFICATIONS = "task.notifications.queue";
+    public static final String EXCHANGE_TASKS = "task.events.exchange";
+    public static final String ROUTING_KEY_TASK_DUE_SOON = "task.due.soon";
 
-    @Value("${rabbitmq.queue.email}")
-    private String emailQueue;
-
-    @Value("${rabbitmq.exchange}")
-    private String exchange;
-
-    @Value("${rabbitmq.routing-key.notification}")
-    private String notificationRoutingKey;
-
-    @Value("${rabbitmq.routing-key.email}")
-    private String emailRoutingKey;
-
-    @Value("${rabbitmq.queue.dead-letter}")
-    private String deadLetterQueue;
-
-    @Value("${rabbitmq.exchange.dead-letter}")
-    private String deadLetterExchange;
-
-    @Value("${rabbitmq.routing-key.dead-letter}")
-    private String deadLetterRoutingKey;
-
-    // Normal queues
     @Bean
-    public Queue notificationQueue() {
-        return QueueBuilder.durable(notificationQueue)
-                .withArgument("x-dead-letter-exchange", deadLetterExchange)
-                .withArgument("x-dead-letter-routing-key", deadLetterRoutingKey)
-                .build();
+    public Queue taskNotificationsQueue() {
+        return new Queue(QUEUE_TASK_NOTIFICATIONS, true);
     }
 
     @Bean
-    public Queue emailQueue() {
-        return QueueBuilder.durable(emailQueue)
-                .withArgument("x-dead-letter-exchange", deadLetterExchange)
-                .withArgument("x-dead-letter-routing-key", deadLetterRoutingKey)
-                .build();
-    }
-
-    // Dead letter queue
-    @Bean
-    public Queue deadLetterQueue() {
-        return QueueBuilder.durable(deadLetterQueue).build();
-    }
-
-    // Exchanges
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(exchange);
+    public DirectExchange tasksExchange() {
+        return new DirectExchange(EXCHANGE_TASKS);
     }
 
     @Bean
-    public TopicExchange deadLetterExchange() {
-        return new TopicExchange(deadLetterExchange);
-    }
-
-    // Bindings
-    @Bean
-    public Binding notificationBinding() {
-        return BindingBuilder
-                .bind(notificationQueue())
-                .to(exchange())
-                .with(notificationRoutingKey);
+    public Binding taskDueSoonBinding(Queue taskNotificationsQueue, DirectExchange tasksExchange) {
+        return BindingBuilder.bind(taskNotificationsQueue).to(tasksExchange).with(ROUTING_KEY_TASK_DUE_SOON);
     }
 
     @Bean
-    public Binding emailBinding() {
-        return BindingBuilder
-                .bind(emailQueue())
-                .to(exchange())
-                .with(emailRoutingKey);
-    }
-
-    @Bean
-    public Binding deadLetterBinding() {
-        return BindingBuilder
-                .bind(deadLetterQueue())
-                .to(deadLetterExchange())
-                .with(deadLetterRoutingKey);
-    }
-
-    // Message converter
-    @Bean
-    public MessageConverter converter() {
+    public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    // Configure RabbitTemplate
     @Bean
-    public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
-        rabbitTemplate.setMessageConverter(converter());
+        rabbitTemplate.setMessageConverter(jsonMessageConverter());
         return rabbitTemplate;
     }
 }

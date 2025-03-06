@@ -1,10 +1,7 @@
 package com.phuonghieuto.backend.task_service.service.impl;
 
-import com.phuonghieuto.backend.task_service.exception.BoardNotFoundException;
-import com.phuonghieuto.backend.task_service.exception.TableNotFoundException;
 import com.phuonghieuto.backend.task_service.exception.TaskNotFoundException;
 import com.phuonghieuto.backend.task_service.exception.UnauthorizedAccessException;
-import com.phuonghieuto.backend.task_service.model.auth.enums.TokenClaims;
 import com.phuonghieuto.backend.task_service.model.task.dto.request.TaskRequestDTO;
 import com.phuonghieuto.backend.task_service.model.task.dto.response.TaskResponseDTO;
 import com.phuonghieuto.backend.task_service.model.task.entity.BoardEntity;
@@ -12,15 +9,14 @@ import com.phuonghieuto.backend.task_service.model.task.entity.TableEntity;
 import com.phuonghieuto.backend.task_service.model.task.entity.TaskEntity;
 import com.phuonghieuto.backend.task_service.model.task.mapper.TaskEntityToTaskResponseMapper;
 import com.phuonghieuto.backend.task_service.model.task.mapper.TaskRequestToTaskEntityMapper;
-import com.phuonghieuto.backend.task_service.repository.BoardRepository;
-import com.phuonghieuto.backend.task_service.repository.TableRepository;
 import com.phuonghieuto.backend.task_service.repository.TaskRepository;
+import com.phuonghieuto.backend.task_service.service.EntityAccessControlService;
 import com.phuonghieuto.backend.task_service.service.TaskService;
+import com.phuonghieuto.backend.task_service.util.AuthUtils;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,19 +31,19 @@ import java.util.stream.IntStream;
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
-    private final TableRepository tableRepository;
-    private final BoardRepository boardRepository;
     private final TaskRequestToTaskEntityMapper taskRequestToTaskEntityMapper = TaskRequestToTaskEntityMapper
             .initialize();
     private final TaskEntityToTaskResponseMapper taskEntityToTaskResponseMapper = TaskEntityToTaskResponseMapper
             .initialize();
+    private final EntityAccessControlService accessControlService;
+    private final AuthUtils authUtils;
 
     @Override
     public TaskResponseDTO createTask(TaskRequestDTO taskRequest) {
-        String currentUserId = getCurrentUserId();
+        String currentUserId = authUtils.getCurrentUserId();
 
         // Check if table exists and user has access to it
-        TableEntity table = findTableAndCheckAccess(taskRequest.getTableId(), currentUserId);
+        TableEntity table = accessControlService.findTableAndCheckAccess(taskRequest.getTableId(), currentUserId);
 
         // Determine the order index if not specified
         if (taskRequest.getOrderIndex() <= 0) {
@@ -65,18 +61,18 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskResponseDTO getTaskById(String id) {
-        String currentUserId = getCurrentUserId();
-        TaskEntity taskEntity = findTaskAndCheckAccess(id, currentUserId);
+        String currentUserId = authUtils.getCurrentUserId();
+        TaskEntity taskEntity = accessControlService.findTaskAndCheckAccess(id, currentUserId);
 
         return taskEntityToTaskResponseMapper.map(taskEntity);
     }
 
     @Override
     public List<TaskResponseDTO> getAllTasksByTableId(String tableId) {
-        String currentUserId = getCurrentUserId();
+        String currentUserId = authUtils.getCurrentUserId();
 
         // Check if table exists and user has access to it
-        findTableAndCheckAccess(tableId, currentUserId);
+        accessControlService.findTableAndCheckAccess(tableId, currentUserId);
 
         // Get all tasks for the table, ordered by orderIndex
         List<TaskEntity> tasks = taskRepository.findByTableIdOrderByOrderIndexAsc(tableId);
@@ -86,7 +82,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<TaskResponseDTO> getAllTasksByAssignedUserId(String userId) {
-        String currentUserId = getCurrentUserId();
+        String currentUserId = authUtils.getCurrentUserId();
 
         // If requesting tasks for another user, verify current user has admin rights
         if (!currentUserId.equals(userId)) {
@@ -97,7 +93,7 @@ public class TaskServiceImpl implements TaskService {
         // Get all tasks assigned to the user
         List<TaskEntity> tasks = taskRepository.findByAssignedUserId(userId);
 
-        // For each task, check if current user has access to its board
+        // For each task, filter to only include those the user has access to
         List<TaskEntity> accessibleTasks = tasks.stream().filter(task -> hasAccessToTaskBoard(task, currentUserId))
                 .collect(Collectors.toList());
 
@@ -106,8 +102,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public TaskResponseDTO updateTask(String id, TaskRequestDTO taskRequest) {
-        String currentUserId = getCurrentUserId();
-        TaskEntity existingTask = findTaskAndCheckAccess(id, currentUserId);
+        String currentUserId = authUtils.getCurrentUserId();
+        TaskEntity existingTask = accessControlService.findTaskAndCheckAccess(id, currentUserId);
 
         // Update task properties
         existingTask.setTitle(taskRequest.getTitle());
@@ -120,7 +116,8 @@ public class TaskServiceImpl implements TaskService {
 
         // If table ID has changed (task moved to another table)
         if (!existingTask.getTable().getId().equals(taskRequest.getTableId())) {
-            TableEntity newTable = findTableAndCheckAccess(taskRequest.getTableId(), currentUserId);
+            TableEntity newTable = accessControlService.findTableAndCheckAccess(taskRequest.getTableId(),
+                    currentUserId);
             existingTask.setTable(newTable);
         }
 
@@ -137,8 +134,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteTask(String id) {
-        String currentUserId = getCurrentUserId();
-        TaskEntity taskEntity = findTaskAndCheckAccess(id, currentUserId);
+        String currentUserId = authUtils.getCurrentUserId();
+        TaskEntity taskEntity = accessControlService.findTaskAndCheckAccess(id, currentUserId);
 
         taskRepository.delete(taskEntity);
         log.info("Deleted task with ID: {}", id);
@@ -147,10 +144,10 @@ public class TaskServiceImpl implements TaskService {
     @Override
     @Transactional
     public void reorderTasks(String tableId, List<String> taskIds) {
-        String currentUserId = getCurrentUserId();
+        String currentUserId = authUtils.getCurrentUserId();
 
         // Check if table exists and user has access to it
-        findTableAndCheckAccess(tableId, currentUserId);
+        accessControlService.findTableAndCheckAccess(tableId, currentUserId);
 
         // Update order indexes based on the provided order
         IntStream.range(0, taskIds.size()).forEach(index -> {
@@ -171,80 +168,17 @@ public class TaskServiceImpl implements TaskService {
         log.info("Reordered tasks for table ID: {}", tableId);
     }
 
-    // Helper methods
-    private String getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
-            Jwt jwt = (Jwt) authentication.getPrincipal();
-            return jwt.getClaim(TokenClaims.USER_ID.getValue());
-        }
-        throw new UnauthorizedAccessException("User not authenticated");
-    }
-
     @Override
     public List<TaskResponseDTO> findByDueDateBetween(LocalDateTime start, LocalDateTime end) {
-        return taskRepository.findByDueDateBetween(start, end).stream().map(taskEntityToTaskResponseMapper::map)
+        String currentUserId = authUtils.getCurrentUserId();
+
+        List<TaskEntity> tasks = taskRepository.findByDueDateBetween(start, end);
+
+        // Filter tasks by access
+        List<TaskEntity> accessibleTasks = tasks.stream().filter(task -> hasAccessToTaskBoard(task, currentUserId))
                 .collect(Collectors.toList());
-    }
 
-    // private BoardEntity findBoardAndCheckAccess(String boardId, String userId) {
-    //     BoardEntity boardEntity = boardRepository.findById(boardId)
-    //             .orElseThrow(() -> new BoardNotFoundException("Board not found with ID: " + boardId));
-
-    //     // Check if user is owner or collaborator
-    //     boolean hasAccess = boardEntity.getOwnerId().equals(userId)
-    //             || (boardEntity.getCollaboratorIds() != null && boardEntity.getCollaboratorIds().contains(userId));
-
-    //     if (!hasAccess) {
-    //         throw new UnauthorizedAccessException("User does not have access to this board");
-    //     }
-
-    //     return boardEntity;
-    // }
-
-    private TableEntity findTableAndCheckAccess(String tableId, String userId) {
-        TableEntity tableEntity = tableRepository.findById(tableId)
-                .orElseThrow(() -> new TableNotFoundException("Table not found with ID: " + tableId));
-
-        // Check if user has access to the board this table belongs to
-        BoardEntity board = tableEntity.getBoard();
-        if (board == null) {
-            throw new TableNotFoundException("Table has no associated board");
-        }
-
-        boolean hasAccess = board.getOwnerId().equals(userId)
-                || (board.getCollaboratorIds() != null && board.getCollaboratorIds().contains(userId));
-
-        if (!hasAccess) {
-            throw new UnauthorizedAccessException("User does not have access to this table");
-        }
-
-        return tableEntity;
-    }
-
-    private TaskEntity findTaskAndCheckAccess(String taskId, String userId) {
-        TaskEntity taskEntity = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found with ID: " + taskId));
-
-        // Check if user has access to the board this task belongs to
-        TableEntity table = taskEntity.getTable();
-        if (table == null) {
-            throw new TaskNotFoundException("Task has no associated table");
-        }
-
-        BoardEntity board = table.getBoard();
-        if (board == null) {
-            throw new TableNotFoundException("Table has no associated board");
-        }
-
-        boolean hasAccess = board.getOwnerId().equals(userId)
-                || (board.getCollaboratorIds() != null && board.getCollaboratorIds().contains(userId));
-
-        if (!hasAccess) {
-            throw new UnauthorizedAccessException("User does not have access to this task");
-        }
-
-        return taskEntity;
+        return accessibleTasks.stream().map(taskEntityToTaskResponseMapper::map).collect(Collectors.toList());
     }
 
     private boolean hasAccessToTaskBoard(TaskEntity task, String userId) {
@@ -263,4 +197,28 @@ public class TaskServiceImpl implements TaskService {
             return false;
         }
     }
+
+    // @Scheduled(cron = "0 */5 * * * *") // Check every 5 minutes
+    // public void checkAndPublishUpcomingTasks() {
+    // LocalDateTime now = LocalDateTime.now();
+    // LocalDateTime cutoff = now.plusHours(1); // Tasks due within next hour
+
+    // List<TaskEntity> upcomingTasks =
+    // taskRepository.findByDueDateBetweenAndReminderSent(now, cutoff, false);
+
+    // for (TaskEntity task : upcomingTasks) {
+    // Map<String, Object> eventData = new HashMap<>();
+    // eventData.put("taskId", task.getId());
+    // eventData.put("userId", task.getAssignedUserId());
+    // eventData.put("title", task.getTitle());
+    // eventData.put("dueDate", task.getDueDate());
+
+    // // Publish to RabbitMQ
+    // rabbitTemplate.convertAndSend("task.events", "task.upcoming", eventData);
+
+    // // Mark that we've sent a reminder
+    // task.setReminderSent(true);
+    // taskRepository.save(task);
+    // }
+    // }
 }

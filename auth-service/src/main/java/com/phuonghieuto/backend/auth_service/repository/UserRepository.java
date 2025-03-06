@@ -10,5 +10,6 @@ import com.phuonghieuto.backend.auth_service.model.user.entity.UserEntity;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, String> {
     boolean existsUserEntityByEmail(final String email);
+    boolean existsUserEntityByUsername(final String username);
     Optional<UserEntity> findUserEntityByEmail(final String email);
 }

@@ -13,19 +13,8 @@ spring:
     properties:
       hibernate.format_sql: true
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
-  mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:your-email@gmail.com}
-    password: ${MAIL_PASSWORD:your-password}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
   rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
+    host: ${RABBITMQ_HOST:rabbitmq}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
@@ -42,14 +31,17 @@ spring:
 rabbitmq:
   queue:
     notification: notification.queue
-    email: email.queue
-    dead-letter: notification.deadletter.queue
   exchange: notification.exchange
-  exchange.dead-letter: notification.deadletter.exchange
+  task-exchange: task.events.exchange
   routing-key:
     notification: notification.routing.key
-    email: email.routing.key
-    dead-letter: deadletter.routing.key
+    task-due-soon: task.due.soon
+    
+# Task reminder schedule configuration
+task:
+  reminder:
+    schedule: "0 0 */1 * * *"  # Run every hour
+    due-soon-threshold-hours: 24  # Tasks due within 24 hours
     
 logging:
   file:

@@ -21,8 +21,8 @@ import com.phuonghieuto.backend.task_service.service.TokenService;
 import java.io.IOException;
 
 /**
- * Custom filter for handling Bearer token authentication in HTTP requests.
- * Uses a hybrid approach with local validation and remote invalidation check.
+ * Custom filter for handling Bearer token authentication in HTTP requests. Uses
+ * a hybrid approach with local validation and remote invalidation check.
  */
 @Slf4j
 @Component
@@ -33,10 +33,11 @@ public class CustomBearerTokenAuthenticationFilter extends OncePerRequestFilter 
 
     @Override
     protected void doFilterInternal(@NonNull final HttpServletRequest httpServletRequest,
-                                    @NonNull final HttpServletResponse httpServletResponse,
-                                    @NonNull final FilterChain filterChain) throws ServletException, IOException {
+            @NonNull final HttpServletResponse httpServletResponse, @NonNull final FilterChain filterChain)
+            throws ServletException, IOException {
 
-        log.debug("CustomBearerTokenAuthenticationFilter: Request received for URI: {}", httpServletRequest.getRequestURI());
+        log.debug("CustomBearerTokenAuthenticationFilter: Request received for URI: {}",
+                httpServletRequest.getRequestURI());
 
         final String authorizationHeader = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
 
@@ -50,7 +51,7 @@ public class CustomBearerTokenAuthenticationFilter extends OncePerRequestFilter 
 
                 // Step 2: Get authentication from local token parsing
                 final UsernamePasswordAuthenticationToken authentication = tokenService.getAuthentication(jwt);
-                
+
                 // Set authentication to SecurityContextHolder
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 

@@ -1,5 +1,7 @@
 package com.phuonghieuto.backend.task_service.model.task.entity;
 
+import java.time.LocalDateTime;
+
 import com.phuonghieuto.backend.task_service.model.common.entity.BaseEntity;
 
 import jakarta.persistence.*;
@@ -35,4 +37,11 @@ public class TaskEntity extends BaseEntity {
 
     @Column(name = "ORDER_INDEX")
     private int orderIndex;
+
+    @Column(name = "DUE_DATE")
+    private LocalDateTime dueDate;
+
+    @Builder.Default
+    @Column(name = "REMINDER_SENT")
+    private boolean reminderSent = false;
 }

@@ -121,9 +121,9 @@ public class TaskController {
     @GetMapping("/upcoming")
     public ResponseEntity<List<TaskResponseDTO>> getUpcomingTasks() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime tomorrow = now.plusDays(1);
+        LocalDateTime nextHour = now.plusHours(1);
 
-        List<TaskResponseDTO> upcomingTasks = taskService.findByDueDateBetween(now, tomorrow);
+        List<TaskResponseDTO> upcomingTasks = taskService.findByDueDateBetween(now, nextHour);
         return ResponseEntity.ok(upcomingTasks);
     }
 }

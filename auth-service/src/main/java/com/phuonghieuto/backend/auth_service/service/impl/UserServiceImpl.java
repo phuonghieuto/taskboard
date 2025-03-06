@@ -21,9 +21,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RegisterRequestToUserEntityMapper registerRequestToUserEntityMapper = RegisterRequestToUserEntityMapper.initialize();
-
     private final UserEntityToUserMapper userEntityToUserMapper = UserEntityToUserMapper.initialize();
-
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -31,6 +29,10 @@ public class UserServiceImpl implements UserService {
 
         if (userRepository.existsUserEntityByEmail(registerRequest.getEmail())) {
             throw new UserAlreadyExistException("The email is already used for another account: " + registerRequest.getEmail());
+        }
+
+        if (userRepository.existsUserEntityByUsername(registerRequest.getUsername())) {
+            throw new UserAlreadyExistException("The username is already used for another account: " + registerRequest.getUsername());
         }
 
         final UserEntity userEntityToBeSave = registerRequestToUserEntityMapper.mapForSaving(registerRequest);

@@ -3,10 +3,7 @@ package com.phuonghieuto.backend.auth_service.model.user.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-/**
- * Represents a request named {@link TokenInvalidateRequestDTO} to invalidate tokens.
- * This class contains the access and refresh tokens that need to be invalidated.
- */
+
 @Getter
 @Setter
 @Builder

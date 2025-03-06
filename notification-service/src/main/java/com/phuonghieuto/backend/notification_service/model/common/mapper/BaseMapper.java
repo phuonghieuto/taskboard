@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.task_service.model.common.mapper;
+package com.phuonghieuto.backend.notification_service.model.common.mapper;
 
 import java.util.Collection;
 import java.util.List;

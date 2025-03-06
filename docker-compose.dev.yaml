@@ -113,10 +113,15 @@ services:
   networks:
     - microservices-network
   environment:
-    - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME:-user}
-    - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-password}
+    - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
+    - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
   volumes:
     - rabbitmq_data:/var/lib/rabbitmq
+  healthcheck:
+    test: ["CMD", "rabbitmqctl", "status"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
 
 networks:
   microservices-network:

@@ -16,10 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-/**
- * Base entity class named {@link BaseEntity} with common fields for audit tracking and lifecycle management.
- * Provides automatic population of audit fields using JPA lifecycle annotations.
- */
 @Getter
 @Setter
 @SuperBuilder
@@ -59,10 +55,6 @@ public class BaseEntity {
         this.createdAt = LocalDateTime.now();
     }
 
-    /**
-     * Sets the updatedBy and updatedAt fields before updating the entity.
-     * If no authenticated user is found, sets updatedBy to "anonymousUser".
-     */
     @PreUpdate
     public void preUpdate() {
         this.updatedBy = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())

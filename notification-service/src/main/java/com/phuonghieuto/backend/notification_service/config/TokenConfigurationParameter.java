@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
 
 import com.phuonghieuto.backend.notification_service.service.impl.FileKeyProvider;
+import com.phuonghieuto.backend.notification_service.util.KeyConverter;
 
 import java.security.PublicKey;
 

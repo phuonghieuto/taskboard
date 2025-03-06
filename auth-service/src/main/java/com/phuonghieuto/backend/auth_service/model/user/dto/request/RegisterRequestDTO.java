@@ -5,10 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
-/**
- * Represents a request named {@link RegisterRequestDTO} for user registration.
- * This class contains the necessary details required to register a new user.
- */
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,6 +19,10 @@ public class RegisterRequestDTO {
 
     @Size(min = 8)
     private String password;
+
+    @Size(min = 4, message = "Minimum username length is 4 characters.")
+    @NotBlank(message = "Username can't be blank.")
+    private String username;
 
     @NotBlank(message = "First name can't be blank.")
     private String firstName;

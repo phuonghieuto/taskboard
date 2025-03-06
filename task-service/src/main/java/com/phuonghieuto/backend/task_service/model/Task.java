@@ -1,5 +1,7 @@
 package com.phuonghieuto.backend.task_service.model;
 
+import java.time.LocalDateTime;
+
 import com.phuonghieuto.backend.task_service.model.common.BaseDomainModel;
 
 import lombok.EqualsAndHashCode;
@@ -20,5 +22,6 @@ public class Task extends BaseDomainModel{
     private Table table;
     private String assignedUserId;
     private int orderIndex;
-    
+    private LocalDateTime dueDate;
+    private boolean reminderSent;
 }

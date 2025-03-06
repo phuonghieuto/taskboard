@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.task_service.model.common.entity;
+package com.phuonghieuto.backend.notification_service.model.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

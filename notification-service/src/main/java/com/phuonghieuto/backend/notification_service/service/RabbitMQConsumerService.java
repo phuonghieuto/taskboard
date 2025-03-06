@@ -1,13 +1,13 @@
 package com.phuonghieuto.backend.notification_service.service;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Service;
-
-import com.phuonghieuto.backend.notification_service.model.notification.dto.request.EmailNotificationRequestDTO;
-import com.phuonghieuto.backend.notification_service.model.notification.dto.request.NotificationRequestDTO;
+import com.phuonghieuto.backend.notification_service.config.RabbitMQConfig;
+import com.phuonghieuto.backend.notification_service.model.notification.dto.TaskNotificationDTO;
+import com.phuonghieuto.backend.notification_service.model.notification.enums.NotificationType;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -15,29 +15,20 @@ import lombok.extern.slf4j.Slf4j;
 public class RabbitMQConsumerService {
 
     private final NotificationService notificationService;
-    private final EmailService emailService;
 
-    @RabbitListener(queues = "${rabbitmq.queue.notification}")
-    public void consumeNotification(NotificationRequestDTO notificationRequest) {
-        log.info("Received notification from queue: {}", notificationRequest);
-        notificationService.createNotification(notificationRequest);
-    }
-
-    @RabbitListener(queues = "${rabbitmq.queue.email}")
-    public void consumeEmail(EmailNotificationRequestDTO emailRequest) {
-        log.info("Received email request from queue: {}", emailRequest);
-        emailService.sendTemplatedEmail(
-            emailRequest.getRecipientEmail(),
-            emailRequest.getSubject(),
-            emailRequest.getTemplateName(),
-            emailRequest.getTemplateVariables()
-        );
-    }
-    
-    @RabbitListener(queues = "${rabbitmq.queue.dead-letter}")
-    public void processFailedMessages(Object failedMessage) {
-        log.error("Handling dead letter: {}", failedMessage);
-        // Implement your dead letter handling logic
-        // For example, store in database for retry later or notify admins
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_TASK_NOTIFICATIONS)
+    public void receiveTaskNotification(TaskNotificationDTO taskNotification) {
+        log.info("Received task notification: {}", taskNotification);
+        
+        try {
+            if (NotificationType.TASK_DUE_SOON.name().equals(taskNotification.getType())) {
+                notificationService.createTaskDueSoonNotification(taskNotification);
+                log.info("Successfully processed task due soon notification for task: {}", taskNotification.getTaskId());
+            } else {
+                log.warn("Unknown task notification type: {}", taskNotification.getType());
+            }
+        } catch (Exception e) {
+            log.error("Error processing task notification: {}", e.getMessage(), e);
+        }
     }
 }

@@ -1,20 +1,19 @@
 package com.phuonghieuto.backend.notification_service.service.impl;
 
-import com.phuonghieuto.backend.notification_service.exception.NotificationNotFoundException;
-import com.phuonghieuto.backend.notification_service.model.notification.dto.request.EmailNotificationRequestDTO;
-import com.phuonghieuto.backend.notification_service.model.notification.dto.request.NotificationRequestDTO;
-import com.phuonghieuto.backend.notification_service.model.notification.dto.response.NotificationResponseDTO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.phuonghieuto.backend.notification_service.model.notification.dto.TaskNotificationDTO;
 import com.phuonghieuto.backend.notification_service.model.notification.entity.NotificationEntity;
-import com.phuonghieuto.backend.notification_service.model.notification.mapper.NotificationMapper;
 import com.phuonghieuto.backend.notification_service.repository.NotificationRepository;
-import com.phuonghieuto.backend.notification_service.service.EmailService;
 import com.phuonghieuto.backend.notification_service.service.NotificationService;
+import com.phuonghieuto.backend.notification_service.service.WebSocketService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,61 +21,64 @@ import org.springframework.stereotype.Service;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final EmailService emailService;
-    private final NotificationMapper notificationMapper;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final WebSocketService webSocketService;
+    private final ObjectMapper objectMapper;
 
-    @Override
-    public void createNotification(NotificationRequestDTO requestDTO) {
-        NotificationEntity notification = NotificationEntity.builder().userId(requestDTO.getRecipientId())
-                .title(requestDTO.getTitle()).message(requestDTO.getMessage()).type(requestDTO.getType())
-                .referenceId(requestDTO.getReferenceId()).read(false).build();
-
-        NotificationEntity savedNotification = notificationRepository.save(notification);
-
-        // Convert to DTO for WebSocket message
-        NotificationResponseDTO responseDTO = notificationMapper.entityToResponse(savedNotification);
-
-        // Send to WebSocket
-        messagingTemplate.convertAndSendToUser(requestDTO.getRecipientId(), "/queue/notifications", responseDTO);
-
-        log.info("Created notification for user: {}", requestDTO.getRecipientId());
+    public NotificationEntity createTaskDueSoonNotification(TaskNotificationDTO taskNotification) {
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(taskNotification);
+            
+            NotificationEntity notification = NotificationEntity.builder()
+                    .userId(taskNotification.getRecipientId())
+                    .title("Task Due Soon")
+                    .message("Your task '" + taskNotification.getTaskTitle() + "' is due soon")
+                    .type("TASK_DUE_SOON")
+                    .referenceId(taskNotification.getTaskId())
+                    .referenceType("TASK")
+                    .read(false)
+                    .payload(jsonPayload)
+                    .build();
+            
+            NotificationEntity savedNotification = notificationRepository.save(notification);
+            
+            // Send real-time notification
+            webSocketService.sendNotificationToUser(
+                    taskNotification.getRecipientId(), 
+                    savedNotification
+            );
+            
+            return savedNotification;
+        } catch (Exception e) {
+            log.error("Error creating task due soon notification", e);
+            throw new RuntimeException("Failed to create notification", e);
+        }
     }
 
-    @Override
-    public void sendEmail(EmailNotificationRequestDTO requestDTO) {
-        emailService.sendTemplatedEmail(requestDTO.getRecipientEmail(), requestDTO.getSubject(),
-                requestDTO.getTemplateName(), requestDTO.getTemplateVariables());
-        log.info("Sent email to: {}", requestDTO.getRecipientEmail());
+    public Page<NotificationEntity> getUserNotifications(String userId, Pageable pageable) {
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
     }
 
-    @Override
-    public Page<NotificationResponseDTO> getUserNotifications(String userId, Pageable pageable) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
-                .map(notificationMapper::entityToResponse);
+    public List<NotificationEntity> getUnreadNotifications(String userId) {
+        return notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
     }
 
-    @Override
-    public NotificationResponseDTO markAsRead(String notificationId) {
-        NotificationEntity notification = notificationRepository.findById(notificationId).orElseThrow(
-                () -> new NotificationNotFoundException("Notification not found with ID: " + notificationId));
+    public long countUnreadNotifications(String userId) {
+        return notificationRepository.countByUserIdAndReadFalse(userId);
+    }
 
+    public NotificationEntity markAsRead(String notificationId) {
+        NotificationEntity notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+        
         notification.setRead(true);
-        NotificationEntity savedNotification = notificationRepository.save(notification);
-
-        return notificationMapper.entityToResponse(savedNotification);
+        return notificationRepository.save(notification);
     }
 
-    @Override
     public void markAllAsRead(String userId) {
-        notificationRepository.findByUserIdAndReadOrderByCreatedAtDesc(userId, false).forEach(notification -> {
-            notification.setRead(true);
-            notificationRepository.save(notification);
-        });
-    }
-
-    @Override
-    public long getUnreadCount(String userId) {
-        return notificationRepository.countByUserIdAndRead(userId, false);
+        List<NotificationEntity> unreadNotifications = 
+                notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
+        
+        unreadNotifications.forEach(notification -> notification.setRead(true));
+        notificationRepository.saveAll(unreadNotifications);
     }
 }

@@ -2,10 +2,7 @@ package com.phuonghieuto.backend.auth_service.model.user.dto.response;
 
 import lombok.*;
 
-/**
- * Represents a response named {@link TokenResponseDTO} containing tokens for authentication.
- * This class includes the access token, its expiration time, and the refresh token.
- */
+
 @Getter
 @Setter
 @Builder

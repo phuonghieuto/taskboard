@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.phuonghieuto.backend.notification_service.model.auth.Token;
 import com.phuonghieuto.backend.notification_service.service.TokenService;
 
 import java.io.IOException;
@@ -31,15 +32,16 @@ public class CustomBearerTokenAuthenticationFilter extends OncePerRequestFilter 
     protected void doFilterInternal(@NonNull final HttpServletRequest httpServletRequest,
                                    @NonNull final HttpServletResponse httpServletResponse,
                                    @NonNull final FilterChain filterChain) throws ServletException, IOException {
+        log.debug("API Request was secured with Security!");
         final String authHeader = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
         
-        if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
+        if (!StringUtils.hasText(authHeader) || !Token.isBearerToken(authHeader)) {
             filterChain.doFilter(httpServletRequest, httpServletResponse);
             return;
         }
         
         try {
-            final String jwt = authHeader.substring(7);
+            final String jwt = Token.getJwt(authHeader);
             
             // Validate the token locally
             tokenService.validateToken(jwt);

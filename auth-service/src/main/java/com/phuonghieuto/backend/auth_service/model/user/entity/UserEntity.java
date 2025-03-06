@@ -12,10 +12,6 @@ import com.phuonghieuto.backend.auth_service.model.user.enums.TokenClaims;
 import com.phuonghieuto.backend.auth_service.model.user.enums.UserStatus;
 import com.phuonghieuto.backend.auth_service.model.user.enums.UserType;
 
-/**
- * Represents a user entity named {@link UserEntity} in the system.
- * This entity stores user-related information such as email, password, and personal details.
- */
 @Getter
 @Setter
 @SuperBuilder
@@ -37,6 +33,9 @@ public class UserEntity extends BaseEntity {
 
     @Column(name = "PASSWORD")
     private String password;
+
+    @Column(name = "USERNAME")
+    private String username;
 
     @Column(name = "FIRST_NAME")
     private String firstName;
@@ -68,6 +67,7 @@ public class UserEntity extends BaseEntity {
         final Map<String, Object> claims = new HashMap<>();
 
         claims.put(TokenClaims.USER_ID.getValue(), this.id);
+        claims.put(TokenClaims.USER_USERNAME.getValue(), this.username);
         claims.put(TokenClaims.USER_TYPE.getValue(), this.userType);
         claims.put(TokenClaims.USER_STATUS.getValue(), this.userStatus);
         claims.put(TokenClaims.USER_FIRST_NAME.getValue(), this.firstName);

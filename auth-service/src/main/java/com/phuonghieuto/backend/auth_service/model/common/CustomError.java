@@ -9,9 +9,6 @@ import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Represents a custom error response named {@link CustomError} structure for REST APIs.
- */
 @Getter
 @Builder
 public class CustomError {
@@ -32,9 +29,6 @@ public class CustomError {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<CustomSubError> subErrors;
 
-    /**
-     * Represents a sub-error with specific details as {@link CustomSubError}.
-     */
     @Getter
     @Builder
     public static class CustomSubError {
@@ -51,9 +45,6 @@ public class CustomError {
 
     }
 
-    /**
-     * Enumerates common error headers for categorizing errors as {@link Header}.
-     */
     @Getter
     @RequiredArgsConstructor
     public enum Header {

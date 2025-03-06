@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.task_service.model.common.dto.response;
+package com.phuonghieuto.backend.notification_service.model.common.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

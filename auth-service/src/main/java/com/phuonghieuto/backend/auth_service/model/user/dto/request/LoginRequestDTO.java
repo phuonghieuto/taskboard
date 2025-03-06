@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- * Represents a login request named {@link LoginRequestDTO} containing the user's email and password.
- */
+
 @Getter
 @Setter
 @Builder
