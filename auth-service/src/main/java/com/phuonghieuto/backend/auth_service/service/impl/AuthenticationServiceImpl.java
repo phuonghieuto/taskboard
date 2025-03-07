@@ -7,9 +7,11 @@ import com.phuonghieuto.backend.auth_service.model.Token;
 import com.phuonghieuto.backend.auth_service.model.user.dto.request.LoginRequestDTO;
 import com.phuonghieuto.backend.auth_service.model.user.dto.request.TokenInvalidateRequestDTO;
 import com.phuonghieuto.backend.auth_service.model.user.dto.request.TokenRefreshRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.dto.response.TokenResponseDTO;
 import com.phuonghieuto.backend.auth_service.model.user.entity.UserEntity;
 import com.phuonghieuto.backend.auth_service.model.user.enums.TokenClaims;
 import com.phuonghieuto.backend.auth_service.model.user.enums.UserStatus;
+import com.phuonghieuto.backend.auth_service.model.user.mapper.TokenToTokenResponseMapper;
 import com.phuonghieuto.backend.auth_service.repository.UserRepository;
 import com.phuonghieuto.backend.auth_service.service.AuthenticationService;
 import com.phuonghieuto.backend.auth_service.service.TokenGenerationService;
@@ -49,7 +51,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         Token token = tokenGenerationService.generateToken(userEntityFromDB.getClaims());
         TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
-        return tokenResponse
+        return tokenResponse;
     }
 
     @Override
@@ -68,13 +70,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         validateUserStatus(userEntityFromDB);
 
-        Token token tokenGenerationService.generateToken(
+        Token token = tokenGenerationService.generateToken(
                 userEntityFromDB.getClaims(),
                 tokenRefreshRequest.getRefreshToken()
         );
 
         TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
-        return tokenResponse
+        return tokenResponse;
     }
 
     @Override

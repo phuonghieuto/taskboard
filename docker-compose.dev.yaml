@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
@@ -103,25 +103,27 @@ services:
     env_file:
       - .env
     container_name: notification-service
+    volumes:
+      - ./keys:/app/keys
 
   rabbitmq:
-  image: rabbitmq:3-management
-  container_name: rabbitmq
-  ports:
-    - "5672:5672"
-    - "15672:15672"
-  networks:
-    - microservices-network
-  environment:
-    - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
-    - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
-  volumes:
-    - rabbitmq_data:/var/lib/rabbitmq
-  healthcheck:
-    test: ["CMD", "rabbitmqctl", "status"]
-    interval: 10s
-    timeout: 5s
-    retries: 5
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - microservices-network
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   microservices-network:
@@ -130,5 +132,5 @@ networks:
 volumes:
   postgres_data:
     name: postgres_data
-  rabbitmq_data: 
+  rabbitmq_data:
     name: rabbitmq_data

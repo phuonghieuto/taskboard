@@ -64,7 +64,7 @@
 	<modules>
 		<module>discovery-server</module>
 		<module>api-gateway</module>
-		<module>user-service</module>
+		<module>auth-service</module>
 		<module>task-service</module>
 		<module>notification-service</module>
 	</modules>

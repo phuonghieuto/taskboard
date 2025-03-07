@@ -21,6 +21,11 @@ public class CustomResponse<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T response;
 
+    public static final CustomResponse<Void> SUCCESS = CustomResponse.<Void>builder()
+            .httpStatus(HttpStatus.OK)
+            .isSuccess(true)
+            .build();
+
     public static <T> CustomResponse<T> successOf(final T response) {
         return CustomResponse.<T>builder()
                 .httpStatus(HttpStatus.OK)

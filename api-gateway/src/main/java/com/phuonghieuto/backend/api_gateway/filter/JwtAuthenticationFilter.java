@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -32,7 +33,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     private final ObjectMapper objectMapper;
     private final AuthServiceClient authServiceClient;
 
-    public JwtAuthenticationFilter(AuthServiceClient authServiceClient) {
+    public JwtAuthenticationFilter(@Lazy AuthServiceClient authServiceClient) {
         super(Config.class);
         this.authServiceClient = authServiceClient;
         this.objectMapper = new ObjectMapper();
