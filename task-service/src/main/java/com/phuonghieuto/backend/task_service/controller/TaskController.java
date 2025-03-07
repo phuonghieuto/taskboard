@@ -3,6 +3,7 @@ package com.phuonghieuto.backend.task_service.controller;
 import com.phuonghieuto.backend.task_service.model.common.dto.response.CustomResponse;
 import com.phuonghieuto.backend.task_service.model.task.dto.request.TaskRequestDTO;
 import com.phuonghieuto.backend.task_service.model.task.dto.response.TaskResponseDTO;
+import com.phuonghieuto.backend.task_service.model.task.enums.TaskStatus;
 import com.phuonghieuto.backend.task_service.service.TaskService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/tasks")
@@ -121,9 +123,51 @@ public class TaskController {
     @GetMapping("/upcoming")
     public ResponseEntity<List<TaskResponseDTO>> getUpcomingTasks() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime nextHour = now.plusHours(1);
+        LocalDateTime nextHour = now.plusHours(24);
 
         List<TaskResponseDTO> upcomingTasks = taskService.findByDueDateBetween(now, nextHour);
         return ResponseEntity.ok(upcomingTasks);
+    }
+
+    @Operation(summary = "Update task status")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task status updated successfully", 
+                content = @Content(schema = @Schema(implementation = TaskResponseDTO.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Task not found", content = @Content) })
+    @PatchMapping("/{id}/status")
+    public CustomResponse<TaskResponseDTO> updateTaskStatus(
+            @PathVariable String id, 
+            @RequestBody TaskStatus status) {
+        log.info("TaskController | updateTaskStatus: {} to {}", id, status);
+        TaskResponseDTO response = taskService.updateTaskStatus(id, status);
+        return CustomResponse.successOf(response);
+    }
+
+    @Operation(summary = "Get tasks by status")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tasks retrieved successfully", 
+                content = @Content(schema = @Schema(implementation = List.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content) })
+    @GetMapping("/status/{status}")
+    public CustomResponse<List<TaskResponseDTO>> getTasksByStatus(
+            @PathVariable TaskStatus status) {
+        log.info("TaskController | getTasksByStatus: {}", status);
+        List<TaskResponseDTO> tasks = taskService.getAllTasksByStatus(status);
+        return CustomResponse.successOf(tasks);
+    }
+    
+    @Operation(summary = "Get task statistics for current user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Statistics retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content) })
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<TaskStatus, Long>> getTaskStatistics(Authentication authentication) {
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String userId = jwt.getClaim("userId");
+        
+        log.info("TaskController | getTaskStatistics for user: {}", userId);
+        Map<TaskStatus, Long> statistics = taskService.getTaskStatistics(userId);
+        return ResponseEntity.ok(statistics);
     }
 }

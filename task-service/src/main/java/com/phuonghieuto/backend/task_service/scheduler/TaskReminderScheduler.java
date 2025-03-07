@@ -20,7 +20,7 @@ public class TaskReminderScheduler {
     private final TaskRepository taskRepository;
     private final NotificationProducerService notificationProducerService;
 
-    @Scheduled(cron = "${task.reminder.schedule:0 0 */1 * * *}") // Every hour by default
+    @Scheduled(cron = "${task.reminder.schedule:*/30 * * * * *}") // Every hour by default
     @Transactional
     public void checkForDueSoonTasks() {
         log.info("Running scheduled check for due soon tasks");
@@ -28,7 +28,7 @@ public class TaskReminderScheduler {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime threshold = now.plusHours(24); // Look for tasks due in next 24 hours
 
-        List<TaskEntity> dueSoonTasks = taskRepository.findByDueDateBetweenAndReminderSentFalse(now, threshold);
+        List<TaskEntity> dueSoonTasks = taskRepository.findByDueDateBetweenAndReminderSent(now, threshold, false);
         log.info("Found {} tasks due soon", dueSoonTasks.size());
 
         for (TaskEntity task : dueSoonTasks) {

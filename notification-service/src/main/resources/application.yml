@@ -37,11 +37,6 @@ rabbitmq:
     notification: notification.routing.key
     task-due-soon: task.due.soon
     
-# Task reminder schedule configuration
-task:
-  reminder:
-    schedule: "0 0 */1 * * *"  # Run every hour
-    due-soon-threshold-hours: 24  # Tasks due within 24 hours
     
 logging:
   file:

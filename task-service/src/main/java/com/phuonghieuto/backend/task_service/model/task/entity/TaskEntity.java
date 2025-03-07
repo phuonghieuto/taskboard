@@ -3,6 +3,7 @@ package com.phuonghieuto.backend.task_service.model.task.entity;
 import java.time.LocalDateTime;
 
 import com.phuonghieuto.backend.task_service.model.common.entity.BaseEntity;
+import com.phuonghieuto.backend.task_service.model.task.enums.TaskStatus;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,4 +45,9 @@ public class TaskEntity extends BaseEntity {
     @Builder.Default
     @Column(name = "REMINDER_SENT")
     private boolean reminderSent = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS")
+    @Builder.Default
+    private TaskStatus status = TaskStatus.TODO;
 }

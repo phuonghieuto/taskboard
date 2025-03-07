@@ -7,6 +7,7 @@ import com.phuonghieuto.backend.task_service.model.task.dto.response.TaskRespons
 import com.phuonghieuto.backend.task_service.model.task.entity.BoardEntity;
 import com.phuonghieuto.backend.task_service.model.task.entity.TableEntity;
 import com.phuonghieuto.backend.task_service.model.task.entity.TaskEntity;
+import com.phuonghieuto.backend.task_service.model.task.enums.TaskStatus;
 import com.phuonghieuto.backend.task_service.model.task.mapper.TaskEntityToTaskResponseMapper;
 import com.phuonghieuto.backend.task_service.model.task.mapper.TaskRequestToTaskEntityMapper;
 import com.phuonghieuto.backend.task_service.repository.TaskRepository;
@@ -21,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -126,6 +129,26 @@ public class TaskServiceImpl implements TaskService {
             existingTask.setOrderIndex(taskRequest.getOrderIndex());
         }
 
+        // Update due date if provided
+        if (taskRequest.getDueDate() != null) {
+            existingTask.setDueDate(taskRequest.getDueDate());
+
+            // Check if task is now overdue
+            if (LocalDateTime.now().isAfter(taskRequest.getDueDate())
+                    && existingTask.getStatus() != TaskStatus.COMPLETED) {
+                existingTask.setStatus(TaskStatus.OVERDUE);
+            }
+        }
+
+        // Update status if provided
+        if (taskRequest.getStatus() != null) {
+            existingTask.setStatus(taskRequest.getStatus());
+
+            // If marking as completed, reset the overdue status
+            if (taskRequest.getStatus() == TaskStatus.COMPLETED) {
+                existingTask.setReminderSent(false); // Reset reminder when completed
+            }
+        }
         TaskEntity updatedTask = taskRepository.save(existingTask);
         log.info("Updated task with ID: {}", updatedTask.getId());
 
@@ -198,27 +221,52 @@ public class TaskServiceImpl implements TaskService {
         }
     }
 
-    // @Scheduled(cron = "0 */5 * * * *") // Check every 5 minutes
-    // public void checkAndPublishUpcomingTasks() {
-    // LocalDateTime now = LocalDateTime.now();
-    // LocalDateTime cutoff = now.plusHours(1); // Tasks due within next hour
+    @Override
+    public TaskResponseDTO updateTaskStatus(String id, TaskStatus newStatus) {
+        String currentUserId = authUtils.getCurrentUserId();
+        TaskEntity existingTask = accessControlService.findTaskAndCheckAccess(id, currentUserId);
 
-    // List<TaskEntity> upcomingTasks =
-    // taskRepository.findByDueDateBetweenAndReminderSent(now, cutoff, false);
+        // Record previous status for logging
+        TaskStatus oldStatus = existingTask.getStatus();
 
-    // for (TaskEntity task : upcomingTasks) {
-    // Map<String, Object> eventData = new HashMap<>();
-    // eventData.put("taskId", task.getId());
-    // eventData.put("userId", task.getAssignedUserId());
-    // eventData.put("title", task.getTitle());
-    // eventData.put("dueDate", task.getDueDate());
+        // Update the status
+        existingTask.setStatus(newStatus);
 
-    // // Publish to RabbitMQ
-    // rabbitTemplate.convertAndSend("task.events", "task.upcoming", eventData);
+        // If marking as completed, reset the reminder
+        if (newStatus == TaskStatus.COMPLETED) {
+            existingTask.setReminderSent(false);
+        }
 
-    // // Mark that we've sent a reminder
-    // task.setReminderSent(true);
-    // taskRepository.save(task);
-    // }
-    // }
+        TaskEntity updatedTask = taskRepository.save(existingTask);
+        log.info("Task {} status changed from {} to {}", id, oldStatus, newStatus);
+
+        return taskEntityToTaskResponseMapper.map(updatedTask);
+    }
+
+    @Override
+    public List<TaskResponseDTO> getAllTasksByStatus(TaskStatus status) {
+        String currentUserId = authUtils.getCurrentUserId();
+
+        // Get all tasks with the specified status
+        List<TaskEntity> tasks = taskRepository.findByStatus(status);
+
+        // Filter to only include those the user has access to
+        List<TaskEntity> accessibleTasks = tasks.stream().filter(task -> hasAccessToTaskBoard(task, currentUserId))
+                .collect(Collectors.toList());
+
+        return accessibleTasks.stream().map(taskEntityToTaskResponseMapper::map).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<TaskStatus, Long> getTaskStatistics(String userId) {
+        Map<TaskStatus, Long> statistics = new HashMap<>();
+
+        // Populate statistics for each status
+        for (TaskStatus status : TaskStatus.values()) {
+            long count = taskRepository.countByAssignedUserIdAndStatus(userId, status);
+            statistics.put(status, count);
+        }
+
+        return statistics;
+    }
 }
