@@ -14,4 +14,6 @@ public class TaskResponseDTO {
     private int orderIndex;
     private String tableId;
     private String assignedUserId;
+    private String dueDate;
+    private String status;
 }

@@ -47,7 +47,8 @@ public class SecurityConfig {
                 .cors(customizer -> customizer.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(customizer -> customizer.requestMatchers("/notifications/api-docs/**",
-                        "/notifications/swagger-ui.html/**", "/notifications/swagger-ui/**").permitAll().anyRequest()
+                        "/notifications/swagger-ui.html/**", "/notifications/swagger-ui/**").permitAll().requestMatchers("/ws-notifications/**")  // Add this line
+                        .permitAll().anyRequest()
                         .authenticated())
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(customBearerTokenAuthenticationFilter, BearerTokenAuthenticationFilter.class);

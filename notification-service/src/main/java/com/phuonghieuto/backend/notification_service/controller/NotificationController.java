@@ -42,8 +42,8 @@ public class NotificationController {
     public ResponseEntity<Page<NotificationEntity>> getUserNotifications(@AuthenticationPrincipal Jwt jwt,
             @Parameter(description = "Pagination parameters (page, size, sort)", example = "?page=0&size=10&sort=createdAt,desc") @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
 
-        log.info("Getting notifications for user");
         String userId = jwt.getClaimAsString("userId");
+        log.info("Getting notifications for user: " + userId);
         Page<NotificationEntity> notifications = notificationService.getUserNotifications(userId, pageable);
         return ResponseEntity.ok(notifications);
     }

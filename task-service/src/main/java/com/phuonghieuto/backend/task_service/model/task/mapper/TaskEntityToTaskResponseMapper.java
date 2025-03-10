@@ -23,6 +23,8 @@ public interface TaskEntityToTaskResponseMapper extends BaseMapper<TaskEntity, T
                 .orderIndex(source.getOrderIndex())
                 .tableId(source.getTable() != null ? source.getTable().getId() : null)
                 .assignedUserId(source.getAssignedUserId())
+                .dueDate(source.getDueDate().toString())
+                .status(source.getStatus().name())
                 .build();
     }
     

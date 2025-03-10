@@ -3,7 +3,7 @@ spring:
     name: notification-service
   datasource:
     url: jdbc:postgresql://${POSTGRES_URL}:5432/${NOTIFICATION_DB}
-    username: ${NOTIFICATION_DB}
+    username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
@@ -14,10 +14,10 @@ spring:
       hibernate.format_sql: true
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   rabbitmq:
-    host: ${RABBITMQ_HOST:rabbitmq}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
     listener:
       simple:
         retry:
@@ -56,7 +56,7 @@ logging:
 server:
   port: 8083
   servlet:
-    context-path: /api
+    context-path: /api/v1
 
 eureka:
   client:
@@ -67,13 +67,15 @@ eureka:
     non-secure-port: ${SERVICE_PORT:8083}
     prefer-ip-address: true
 
+
+springdoc:
+  api-docs:
+    path: /notifications/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 openapi:
   service:
     title: Notification Service API Documentation
     version: 1.0.0
     url: http://localhost:8080 # API Gateway URL
-springdoc:
-  api-docs:
-    path: /notifications/v3/api-docs
-  swagger-ui:
-    path: /notifications/swagger-ui.html

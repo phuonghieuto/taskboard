@@ -2,6 +2,7 @@ package com.phuonghieuto.backend.task_service.model.task.dto.request;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.phuonghieuto.backend.task_service.model.task.enums.TaskStatus;
 
 import jakarta.validation.constraints.NotBlank;
@@ -25,6 +26,7 @@ public class TaskRequestDTO {
     
     private int orderIndex;
     
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dueDate;
     
     private TaskStatus status;

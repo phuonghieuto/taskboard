@@ -100,15 +100,19 @@ public class UserController {
             description = "User registration details",
             required = true,
             content = @Content(
+                mediaType = "application/json",
                 schema = @Schema(implementation = RegisterRequestDTO.class),
                 examples = @ExampleObject(
+                    name = "registerExample",
+                    summary = "Standard user registration",
                     value = """
                     {
                       "email": "john.doe@example.com",
                       "password": "Password123!",
-                      "confirmPassword": "Password123!",
+                      "username": "johndoe",
                       "firstName": "John",
-                      "lastName": "Doe"
+                      "lastName": "Doe",
+                      "phoneNumber": "1234567890"
                     }
                     """
                 )

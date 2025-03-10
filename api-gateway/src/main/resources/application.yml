@@ -4,23 +4,6 @@ spring:
       discovery:
         locator:
           enabled: true  # Enable service discovery for dynamic routing
-      # routes:
-      #   - id: auth-service
-      #     uri: lb://auth-service
-      #     predicates:
-      #       - Path=/api/v1/users/**
-      #   - id: auth-service
-      #     uri: lb://auth-service
-      #     predicates:
-      #       - Path=/api/v1/auth/**
-      #   - id: task-service
-      #     uri: lb://task-service
-      #     predicates:
-      #       - Path=/api/v1/tasks/**
-      #   - id: notification-service
-      #     uri: lb://notification-service
-      #     predicates:
-      #       - Path=/api/v1/notifications/**
       globalcors:
         cors-configurations:
           '[/**]':
@@ -51,6 +34,7 @@ logging:
     [org.springframework.cloud.gateway]: INFO
     [org.springframework.cloud.gateway.filter.ReactiveLoadBalancerClientFilter]: INFO
 
+
 springdoc:
   api-docs:
     enabled: true
@@ -59,11 +43,9 @@ springdoc:
     path: /swagger-ui.html
     config-url: /v3/api-docs/swagger-config
     urls:
-      - url: /v3/api-docs
-        name: API Gateway
-      - url: http://localhost:8081/api/v1/auth/api-docs
+      - url: /api/v1/auth/api-docs
         name: Auth Service
-      - url: http://localhost:8082/api/v1/tasks/api-docs
+      - url: /api/v1/tasks/api-docs
         name: Task Service
-      # - url: http://localhost:8084/v1/notifications/v3/api-docs
-      #   name: Notification Service
+      - url: /api/v1/notifications/api-docs
+        name: Notification Service

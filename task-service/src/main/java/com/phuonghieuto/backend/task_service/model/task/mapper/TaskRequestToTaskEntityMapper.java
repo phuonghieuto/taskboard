@@ -23,12 +23,14 @@ public interface TaskRequestToTaskEntityMapper extends BaseMapper<TaskRequestDTO
         }
         
         return TaskEntity.builder()
-                .title(source.getTitle())
-                .description(source.getDescription())
-                .orderIndex(source.getOrderIndex())
-                .table(table)
-                .assignedUserId(source.getAssignedUserId())
-                .build();
+            .title(source.getTitle())
+            .description(source.getDescription())
+            .orderIndex(source.getOrderIndex())
+            .table(table)
+            .assignedUserId(source.getAssignedUserId())
+            .dueDate(source.getDueDate())
+            .status(source.getStatus()) 
+            .build();
     }
     
     static TaskRequestToTaskEntityMapper initialize() {
