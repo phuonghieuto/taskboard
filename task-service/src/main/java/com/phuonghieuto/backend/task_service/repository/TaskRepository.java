@@ -25,6 +25,6 @@ public interface TaskRepository extends JpaRepository<TaskEntity, String> {
 
     long countByAssignedUserIdAndStatus(String userId, TaskStatus status);
 
-    List<TaskEntity> findByDueDateLessThanAndStatusNotAndOverdueNotificationSent(LocalDateTime dueDate,
-            TaskStatus status, boolean overdueNotificationSent);
+    List<TaskEntity> findByDueDateBeforeAndStatusAndOverdueNotificationSentFalse(LocalDateTime dueDate,
+            TaskStatus status);
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -21,16 +22,17 @@ public class TaskReminderScheduler {
     private final TaskRepository taskRepository;
     private final NotificationProducerService notificationProducerService;
 
-    @Scheduled(cron = "${task.reminder.schedule:*/30 * * * * *}")
+    @Scheduled(cron = "${task.reminder.schedule:0 0 * * * *}")
     @Transactional
     public void checkForDueSoonTasks() {
-        log.info("Running scheduled check for due soon tasks");
-
         LocalDateTime now = LocalDateTime.now();
+        String timestamp = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        log.info("[{}] Running scheduled check for due soon tasks", timestamp);
+
         LocalDateTime threshold = now.plusHours(24); // Look for tasks due in next 24 hours
 
         List<TaskEntity> dueSoonTasks = taskRepository.findByDueDateBetweenAndReminderSent(now, threshold, false);
-        log.info("Found {} tasks due soon", dueSoonTasks.size());
+        log.info("[{}] Found {} tasks due soon", timestamp, dueSoonTasks.size());
 
         for (TaskEntity task : dueSoonTasks) {
             try {
@@ -38,35 +40,42 @@ public class TaskReminderScheduler {
 
                 task.setReminderSent(true);
                 taskRepository.save(task);
+                log.info("[{}] Sent due soon notification for task ID: {}", timestamp, task.getId());
             } catch (Exception e) {
-                log.error("Failed to send notification for task {}: {}", task.getId(), e.getMessage());
+                log.error("[{}] Failed to send notification for task {}: {}", timestamp, task.getId(), e.getMessage());
             }
         }
     }
 
-    @Scheduled(cron = "${task.overdue.schedule:*/30 * * * * *}")
+    @Scheduled(cron = "${task.overdue.schedule:0 0 * * * *}")
     @Transactional
     public void checkForOverdueTasks() {
-        log.info("Running scheduled check for overdue tasks");
-
         LocalDateTime now = LocalDateTime.now();
+        String timestamp = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        log.info("[{}] Running scheduled check for overdue tasks", timestamp);
 
         // Find tasks that are overdue but no overdue notification sent
-        List<TaskEntity> overdueTasks = taskRepository.findByDueDateLessThanAndStatusNotAndOverdueNotificationSent(now,
-                TaskStatus.COMPLETED, false);
+        List<TaskEntity> overdueTasks = taskRepository.findByDueDateBeforeAndStatusAndOverdueNotificationSentFalse(
+                now, TaskStatus.TODO);
 
-        log.info("Found {} overdue tasks that need notifications", overdueTasks.size());
+        log.info("[{}] Found {} overdue tasks that need notifications", timestamp, overdueTasks.size());
 
         for (TaskEntity task : overdueTasks) {
             try {
-                notificationProducerService.sendTaskOverdueNotification(task);
-
-                // Mark as notification sent and update status to OVERDUE
+                // IMPORTANT: Set these flags BEFORE sending notification and saving
                 task.setOverdueNotificationSent(true);
                 task.setStatus(TaskStatus.OVERDUE);
+                
+                // Save the task with updated flags
                 taskRepository.save(task);
+                
+                // Send notification after saving to ensure flags are persisted
+                // even if notification sending fails
+                notificationProducerService.sendTaskOverdueNotification(task);
+                
+                log.info("[{}] Sent overdue notification for task ID: {}", timestamp, task.getId());
             } catch (Exception e) {
-                log.error("Failed to send overdue notification for task {}: {}", task.getId(), e.getMessage());
+                log.error("[{}] Failed to send overdue notification for task {}: {}", timestamp, task.getId(), e.getMessage());
             }
         }
     }

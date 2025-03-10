@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Overdue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .header {
+            background-color: #FF4500;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background-color: white;
+            border-radius: 0 0 5px 5px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4285f4;
+            color: white;
+            padding: 10px 20px;
+            margin: 20px 0;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .task-info {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .due-date {
+            color: #FF0000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Task Overdue</h1>
+        </div>
+        <div class="content">
+            <p>Hello,</p>
+            <p>This is an important notification that one of your tasks is now overdue:</p>
+            
+            <div class="task-info">
+                <h2 th:text="${taskTitle}">Task Title</h2>
+                <p><strong>Was Due:</strong> <span class="due-date" th:text="${#temporals.format(dueDate, 'MMM dd, yyyy HH:mm')}">January 1, 2023 12:00</span></p>
+                <p><strong>Board:</strong> <span th:text="${boardName}">Board Name</span></p>
+                <p><strong>Table:</strong> <span th:text="${tableName}">Table Name</span></p>
+            </div>
+            
+            <p>Please complete this task as soon as possible:</p>
+            <a th:href="${taskUrl}" class="button">View Task</a>
+            
+            <p>Best regards,<br>Task Management Team</p>
+        </div>
+    </div>
+</body>
+</html>

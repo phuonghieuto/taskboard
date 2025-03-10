@@ -26,6 +26,14 @@ spring:
           max-attempts: 3
           max-interval: 10000
           multiplier: 2
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail.smtp.auth: ${MAIL_PROPERTIES_MAIL_SMTP_AUTH}
+      mail.smtp.starttls.enable: ${MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE}
 
 # RabbitMQ queue and exchange names
 rabbitmq:
@@ -79,3 +87,6 @@ openapi:
     title: Notification Service API Documentation
     version: 1.0.0
     url: http://localhost:8080 # API Gateway URL
+
+app:
+  frontend-url: ${APP_FRONTEND_URL}

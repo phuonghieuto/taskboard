@@ -1,8 +1,10 @@
 package com.phuonghieuto.backend.auth_service.service.impl;
 
 import com.phuonghieuto.backend.auth_service.exception.UserAlreadyExistException;
+import com.phuonghieuto.backend.auth_service.exception.UserNotFoundException;
 import com.phuonghieuto.backend.auth_service.model.User;
 import com.phuonghieuto.backend.auth_service.model.user.dto.request.RegisterRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.dto.response.UserEmailDTO;
 import com.phuonghieuto.backend.auth_service.model.user.entity.UserEntity;
 import com.phuonghieuto.backend.auth_service.model.user.mapper.RegisterRequestToUserEntityMapper;
 import com.phuonghieuto.backend.auth_service.model.user.mapper.UserEntityToUserMapper;
@@ -44,6 +46,17 @@ public class UserServiceImpl implements UserService {
         return userEntityToUserMapper.map(savedUserEntity);
     }
 
-
+    @Override
+    public UserEmailDTO getUserEmail(String userId) {
+        log.info("UserServiceImpl | getUserEmail | userId: {}", userId);
+        
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
+        
+        return UserEmailDTO.builder()
+                .userId(userEntity.getId())
+                .email(userEntity.getEmail())
+                .build();
+    }
 
 }

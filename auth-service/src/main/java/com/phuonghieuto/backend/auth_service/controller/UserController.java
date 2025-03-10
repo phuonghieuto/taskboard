@@ -2,6 +2,7 @@ package com.phuonghieuto.backend.auth_service.controller;
 
 import com.phuonghieuto.backend.auth_service.model.common.dto.response.CustomResponse;
 import com.phuonghieuto.backend.auth_service.model.user.dto.request.RegisterRequestDTO;
+import com.phuonghieuto.backend.auth_service.model.user.dto.response.UserEmailDTO;
 import com.phuonghieuto.backend.auth_service.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -122,5 +123,54 @@ public class UserController {
         log.info("UserController | registerUser");
         userService.registerUser(registerRequest);
         return CustomResponse.SUCCESS;
+    }
+    
+    @Operation(
+        summary = "Get user email", 
+        description = "Retrieves the email address associated with the specified user ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Email retrieved successfully", 
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = UserEmailDTO.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                      "userId": "1234567890",
+                      "email": "john.doe@example.com"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "User not found", 
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                    {
+                      "success": false,
+                      "error": {
+                        "status": 404,
+                        "message": "User not found",
+                        "details": null
+                      },
+                      "timestamp": "2024-05-25T14:30:00.000Z",
+                      "path": "/api/v1/users/1234567890/email"
+                    }
+                    """
+                )
+            )
+        )
+    })
+    @GetMapping("/{userId}/email")
+    public UserEmailDTO getUserEmail(@PathVariable String userId) {
+        log.info("UserController | getUserEmail | userId: {}", userId);
+        return userService.getUserEmail(userId);
     }
 }

@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/api-docs/**", "/auth/swagger-ui.html/**", "/auth/swagger-ui/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/authenticate").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/*/email").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(customBearerTokenAuthenticationFilter, BearerTokenAuthenticationFilter.class);

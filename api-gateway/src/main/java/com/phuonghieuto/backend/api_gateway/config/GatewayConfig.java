@@ -19,9 +19,9 @@ public class GatewayConfig {
         private final JwtAuthenticationFilter jwtAuthFilter;
 
         // Public endpoints that do not require authentication
-        private final List<String> PUBLIC_ENDPOINTS = Arrays.asList("/api/v1/users/register", "/v3/api-docs/**",
-                        "/swagger-ui/**", "/swagger-ui.html", "/api/v1/auth/api-docs", "/api/v1/tasks/api-docs",
-                        "/api/v1/notifications/api-docs", "/api/v1/ws-notifications/**");
+        private final List<String> PUBLIC_ENDPOINTS = Arrays.asList("/api/v1/users/register", "/api/v1/users/*/email",
+                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api/v1/auth/api-docs",
+                        "/api/v1/tasks/api-docs", "/api/v1/notifications/api-docs", "/api/v1/ws-notifications/**");
 
         @Bean
         public RouteLocator routes(RouteLocatorBuilder builder) {
@@ -47,6 +47,10 @@ public class GatewayConfig {
                                                                 .setPublicEndpoints(PUBLIC_ENDPOINTS))))
                                                 .uri("lb://task-service"))
                                 .route("notification-service", r -> r.path("/api/v1/notifications/**").filters(
+                                                f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
+                                                                .setPublicEndpoints(PUBLIC_ENDPOINTS))))
+                                                .uri("lb://notification-service"))
+                                .route("notification-service", r -> r.path("/api/v1/preferences/**").filters(
                                                 f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
                                                                 .setPublicEndpoints(PUBLIC_ENDPOINTS))))
                                                 .uri("lb://notification-service"))
