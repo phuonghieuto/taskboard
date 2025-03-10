@@ -3,6 +3,7 @@ package com.phuonghieuto.backend.task_service.model;
 import java.time.LocalDateTime;
 
 import com.phuonghieuto.backend.task_service.model.common.BaseDomainModel;
+import com.phuonghieuto.backend.task_service.model.task.enums.TaskStatus;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,4 +25,6 @@ public class Task extends BaseDomainModel{
     private int orderIndex;
     private LocalDateTime dueDate;
     private boolean reminderSent;
+    private boolean overdueNotificationSent;
+    private TaskStatus status;
 }

@@ -27,26 +27,17 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationEntity createTaskDueSoonNotification(TaskNotificationDTO taskNotification) {
         try {
             String jsonPayload = objectMapper.writeValueAsString(taskNotification);
-            
-            NotificationEntity notification = NotificationEntity.builder()
-                    .userId(taskNotification.getRecipientId())
-                    .title("Task Due Soon")
-                    .message("Your task '" + taskNotification.getTaskTitle() + "' is due soon")
-                    .type("TASK_DUE_SOON")
-                    .referenceId(taskNotification.getTaskId())
-                    .referenceType("TASK")
-                    .read(false)
-                    .payload(jsonPayload)
-                    .build();
-            
+
+            NotificationEntity notification = NotificationEntity.builder().userId(taskNotification.getRecipientId())
+                    .title("Task Due Soon").message("Your task '" + taskNotification.getTaskTitle() + "' is due soon")
+                    .type("TASK_DUE_SOON").referenceId(taskNotification.getTaskId()).referenceType("TASK").read(false)
+                    .payload(jsonPayload).build();
+
             NotificationEntity savedNotification = notificationRepository.save(notification);
-            
+
             // Send real-time notification
-            webSocketService.sendNotificationToUser(
-                    taskNotification.getRecipientId(), 
-                    savedNotification
-            );
-            
+            webSocketService.sendNotificationToUser(taskNotification.getRecipientId(), savedNotification);
+
             return savedNotification;
         } catch (Exception e) {
             log.error("Error creating task due soon notification", e);
@@ -69,16 +60,49 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationEntity markAsRead(String notificationId) {
         NotificationEntity notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
-        
+
         notification.setRead(true);
         return notificationRepository.save(notification);
     }
 
     public void markAllAsRead(String userId) {
-        List<NotificationEntity> unreadNotifications = 
-                notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
-        
+        List<NotificationEntity> unreadNotifications = notificationRepository
+                .findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
+
         unreadNotifications.forEach(notification -> notification.setRead(true));
         notificationRepository.saveAll(unreadNotifications);
+    }
+
+    @Override
+    public NotificationEntity createTaskOverdueNotification(TaskNotificationDTO taskNotification) {
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(taskNotification);
+
+            long daysOverdue = 0;
+            if (taskNotification.getAdditionalData() != null
+                    && taskNotification.getAdditionalData().containsKey("daysOverdue")) {
+                daysOverdue = Long.parseLong(taskNotification.getAdditionalData().get("daysOverdue").toString());
+            }
+
+            String message = "Your task '" + taskNotification.getTaskTitle() + "' is overdue";
+            if (daysOverdue > 0) {
+                message += " by " + daysOverdue + (daysOverdue == 1 ? " day" : " days");
+            }
+
+            NotificationEntity notification = NotificationEntity.builder().userId(taskNotification.getRecipientId())
+                    .title("Task Overdue").message(message).type("TASK_OVERDUE")
+                    .referenceId(taskNotification.getTaskId()).referenceType("TASK").read(false).payload(jsonPayload)
+                    .build();
+
+            NotificationEntity savedNotification = notificationRepository.save(notification);
+
+            // Send real-time notification via WebSocket
+            webSocketService.sendNotificationToUser(taskNotification.getRecipientId(), savedNotification);
+
+            return savedNotification;
+        } catch (Exception e) {
+            log.error("Error creating task overdue notification", e);
+            throw new RuntimeException("Failed to create notification", e);
+        }
     }
 }

@@ -20,4 +20,6 @@ public interface NotificationService {
     public NotificationEntity markAsRead(String notificationId);
 
     public void markAllAsRead(String userId);
+
+    public NotificationEntity createTaskOverdueNotification(TaskNotificationDTO taskNotification);
 }

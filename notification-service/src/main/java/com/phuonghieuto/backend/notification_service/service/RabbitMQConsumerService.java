@@ -16,7 +16,7 @@ public class RabbitMQConsumerService {
 
     private final NotificationService notificationService;
 
-    @RabbitListener(queues = RabbitMQConfig.QUEUE_TASK_NOTIFICATIONS)
+        @RabbitListener(queues = RabbitMQConfig.QUEUE_TASK_NOTIFICATIONS)
     public void receiveTaskNotification(TaskNotificationDTO taskNotification) {
         log.info("Received task notification: {}", taskNotification);
         
@@ -24,6 +24,9 @@ public class RabbitMQConsumerService {
             if (NotificationType.TASK_DUE_SOON.name().equals(taskNotification.getType())) {
                 notificationService.createTaskDueSoonNotification(taskNotification);
                 log.info("Successfully processed task due soon notification for task: {}", taskNotification.getTaskId());
+            } else if (NotificationType.TASK_OVERDUE.name().equals(taskNotification.getType())) {
+                notificationService.createTaskOverdueNotification(taskNotification);
+                log.info("Successfully processed task overdue notification for task: {}", taskNotification.getTaskId());
             } else {
                 log.warn("Unknown task notification type: {}", taskNotification.getType());
             }
@@ -31,4 +34,5 @@ public class RabbitMQConsumerService {
             log.error("Error processing task notification: {}", e.getMessage(), e);
         }
     }
+    
 }

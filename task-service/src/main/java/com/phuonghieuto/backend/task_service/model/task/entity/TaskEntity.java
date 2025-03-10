@@ -45,6 +45,10 @@ public class TaskEntity extends BaseEntity {
     @Builder.Default
     @Column(name = "REMINDER_SENT")
     private boolean reminderSent = false;
+    
+    @Builder.Default
+    @Column(name = "overdue_notification_sent")
+    private boolean overdueNotificationSent = false;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS")

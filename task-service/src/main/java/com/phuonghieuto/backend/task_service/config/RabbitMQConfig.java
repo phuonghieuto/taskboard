@@ -14,6 +14,7 @@ public class RabbitMQConfig {
     public static final String QUEUE_TASK_NOTIFICATIONS = "task.notifications.queue";
     public static final String EXCHANGE_TASKS = "task.events.exchange";
     public static final String ROUTING_KEY_TASK_DUE_SOON = "task.due.soon";
+    public static final String ROUTING_KEY_TASK_OVERDUE = "task.overdue";
 
     @Bean
     public Queue taskNotificationsQueue() {
@@ -27,9 +28,7 @@ public class RabbitMQConfig {
 
     @Bean
     public Binding taskDueSoonBinding(Queue taskNotificationsQueue, DirectExchange tasksExchange) {
-        return BindingBuilder.bind(taskNotificationsQueue)
-                .to(tasksExchange)
-                .with(ROUTING_KEY_TASK_DUE_SOON);
+        return BindingBuilder.bind(taskNotificationsQueue).to(tasksExchange).with(ROUTING_KEY_TASK_DUE_SOON);
     }
 
     @Bean
@@ -42,5 +41,10 @@ public class RabbitMQConfig {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
         return rabbitTemplate;
+    }
+
+    @Bean
+    public Binding taskOverdueBinding(Queue taskNotificationsQueue, DirectExchange tasksExchange) {
+        return BindingBuilder.bind(taskNotificationsQueue).to(tasksExchange).with(ROUTING_KEY_TASK_OVERDUE);
     }
 }
