@@ -1,6 +1,6 @@
-package com.phuonghieuto.backend.task_service.service;
+package com.phuonghieuto.backend.task_service.messaging.producer;
 
-import com.phuonghieuto.backend.task_service.config.RabbitMQConfig;
+import com.phuonghieuto.backend.task_service.messaging.config.RabbitMQConfig;
 import com.phuonghieuto.backend.task_service.model.notification.dto.TaskNotificationDTO;
 import com.phuonghieuto.backend.task_service.model.notification.enums.NotificationType;
 import com.phuonghieuto.backend.task_service.model.task.entity.TaskEntity;
@@ -17,7 +17,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class NotificationProducerService {
+public class NotificationProducer {
 
     private final RabbitTemplate rabbitTemplate;
 

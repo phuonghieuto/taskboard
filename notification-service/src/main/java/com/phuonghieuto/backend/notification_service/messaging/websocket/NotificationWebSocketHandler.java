@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.notification_service.websocket;
+package com.phuonghieuto.backend.notification_service.messaging.websocket;
 
 import java.io.IOException;
 import java.util.Map;

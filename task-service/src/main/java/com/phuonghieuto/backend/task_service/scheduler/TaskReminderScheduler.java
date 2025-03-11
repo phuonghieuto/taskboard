@@ -1,9 +1,10 @@
 package com.phuonghieuto.backend.task_service.scheduler;
 
+import com.phuonghieuto.backend.task_service.messaging.producer.NotificationProducer;
 import com.phuonghieuto.backend.task_service.model.task.entity.TaskEntity;
 import com.phuonghieuto.backend.task_service.model.task.enums.TaskStatus;
 import com.phuonghieuto.backend.task_service.repository.TaskRepository;
-import com.phuonghieuto.backend.task_service.service.NotificationProducerService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,7 +21,7 @@ import java.util.List;
 public class TaskReminderScheduler {
 
     private final TaskRepository taskRepository;
-    private final NotificationProducerService notificationProducerService;
+    private final NotificationProducer notificationProducer;
 
     @Scheduled(cron = "${task.reminder.schedule:0 0 * * * *}")
     @Transactional
@@ -36,7 +37,7 @@ public class TaskReminderScheduler {
 
         for (TaskEntity task : dueSoonTasks) {
             try {
-                notificationProducerService.sendTaskDueSoonNotification(task);
+                notificationProducer.sendTaskDueSoonNotification(task);
 
                 task.setReminderSent(true);
                 taskRepository.save(task);
@@ -71,7 +72,7 @@ public class TaskReminderScheduler {
                 
                 // Send notification after saving to ensure flags are persisted
                 // even if notification sending fails
-                notificationProducerService.sendTaskOverdueNotification(task);
+                notificationProducer.sendTaskOverdueNotification(task);
                 
                 log.info("[{}] Sent overdue notification for task ID: {}", timestamp, task.getId());
             } catch (Exception e) {

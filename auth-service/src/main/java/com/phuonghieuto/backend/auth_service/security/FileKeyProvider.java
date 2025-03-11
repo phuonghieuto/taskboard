@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.auth_service.service.impl;
+package com.phuonghieuto.backend.auth_service.security;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

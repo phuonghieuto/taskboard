@@ -1,22 +1,23 @@
-package com.phuonghieuto.backend.notification_service.service;
+package com.phuonghieuto.backend.notification_service.messaging.consumer;
 
-import com.phuonghieuto.backend.notification_service.config.RabbitMQConfig;
+import com.phuonghieuto.backend.notification_service.messaging.config.RabbitMQConfig;
 import com.phuonghieuto.backend.notification_service.model.notification.dto.TaskNotificationDTO;
 import com.phuonghieuto.backend.notification_service.model.notification.enums.NotificationType;
+import com.phuonghieuto.backend.notification_service.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @RequiredArgsConstructor
 @Slf4j
-public class RabbitMQConsumerService {
+public class TaskNotificationConsumer {
 
     private final NotificationService notificationService;
 
-        @RabbitListener(queues = RabbitMQConfig.QUEUE_TASK_NOTIFICATIONS)
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_TASK_NOTIFICATIONS)
     public void receiveTaskNotification(TaskNotificationDTO taskNotification) {
         log.info("Received task notification: {}", taskNotification);
         
@@ -34,5 +35,4 @@ public class RabbitMQConsumerService {
             log.error("Error processing task notification: {}", e.getMessage(), e);
         }
     }
-    
 }

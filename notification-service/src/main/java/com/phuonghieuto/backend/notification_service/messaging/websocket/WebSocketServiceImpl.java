@@ -1,12 +1,10 @@
-package com.phuonghieuto.backend.notification_service.service.impl;
+package com.phuonghieuto.backend.notification_service.messaging.websocket;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.phuonghieuto.backend.notification_service.model.notification.entity.NotificationEntity;
-import com.phuonghieuto.backend.notification_service.service.WebSocketService;
-import com.phuonghieuto.backend.notification_service.websocket.NotificationWebSocketHandler;
 
 @Service
 @RequiredArgsConstructor

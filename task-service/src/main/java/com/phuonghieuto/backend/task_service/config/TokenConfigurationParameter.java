@@ -3,7 +3,7 @@ package com.phuonghieuto.backend.task_service.config;
 import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
 
-import com.phuonghieuto.backend.task_service.service.impl.FileKeyProvider;
+import com.phuonghieuto.backend.task_service.security.FileKeyProvider;
 import com.phuonghieuto.backend.task_service.util.KeyConverter;
 
 import java.security.PublicKey;

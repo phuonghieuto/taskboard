@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.notification_service.service;
+package com.phuonghieuto.backend.notification_service.messaging.email;
 
 import com.phuonghieuto.backend.notification_service.model.notification.dto.TaskNotificationDTO;
 import com.phuonghieuto.backend.notification_service.model.notification.entity.NotificationEntity;

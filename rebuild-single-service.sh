@@ -22,11 +22,11 @@ exec 2>&1
 
 # Rebuild the specified service
 echo "Building $SERVICE_NAME..."
-docker-compose -f docker-compose.dev.yaml build $SERVICE_NAME
+docker-compose -f docker-compose.yaml build $SERVICE_NAME
 
 # Restart the specified service
 echo "Restarting $SERVICE_NAME..."
-docker-compose -f docker-compose.dev.yaml up -d $SERVICE_NAME
+docker-compose -f docker-compose.yaml up -d $SERVICE_NAME
 
 # Check the exit status of the last command
 if [ $? -ne 0 ]; then

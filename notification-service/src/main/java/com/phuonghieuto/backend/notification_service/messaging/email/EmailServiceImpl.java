@@ -1,8 +1,8 @@
-package com.phuonghieuto.backend.notification_service.service.impl;
+package com.phuonghieuto.backend.notification_service.messaging.email;
 
 import com.phuonghieuto.backend.notification_service.model.notification.dto.TaskNotificationDTO;
 import com.phuonghieuto.backend.notification_service.model.notification.entity.NotificationEntity;
-import com.phuonghieuto.backend.notification_service.service.EmailService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

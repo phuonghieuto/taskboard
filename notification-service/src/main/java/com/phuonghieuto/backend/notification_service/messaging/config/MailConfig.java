@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.notification_service.config;
+package com.phuonghieuto.backend.notification_service.messaging.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

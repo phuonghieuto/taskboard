@@ -2,15 +2,15 @@ package com.phuonghieuto.backend.notification_service.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phuonghieuto.backend.notification_service.client.AuthServiceClient;
+import com.phuonghieuto.backend.notification_service.messaging.email.EmailService;
+import com.phuonghieuto.backend.notification_service.messaging.websocket.WebSocketService;
 import com.phuonghieuto.backend.notification_service.model.auth.dto.UserEmailDTO;
 import com.phuonghieuto.backend.notification_service.model.notification.dto.TaskNotificationDTO;
 import com.phuonghieuto.backend.notification_service.model.notification.entity.NotificationEntity;
 import com.phuonghieuto.backend.notification_service.model.preference.entity.NotificationPreferenceEntity;
 import com.phuonghieuto.backend.notification_service.repository.NotificationPreferenceRepository;
 import com.phuonghieuto.backend.notification_service.repository.NotificationRepository;
-import com.phuonghieuto.backend.notification_service.service.EmailService;
 import com.phuonghieuto.backend.notification_service.service.NotificationService;
-import com.phuonghieuto.backend.notification_service.service.WebSocketService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

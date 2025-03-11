@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.notification_service.config;
+package com.phuonghieuto.backend.notification_service.messaging.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -8,13 +8,15 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.phuonghieuto.backend.notification_service.model.common.rabbitmq.RabbitMQConstants;
+
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String QUEUE_TASK_NOTIFICATIONS = "task.notifications.queue";
-    public static final String EXCHANGE_TASKS = "task.events.exchange";
-    public static final String ROUTING_KEY_TASK_DUE_SOON = "task.due.soon";
-    public static final String ROUTING_KEY_TASK_OVERDUE = "task.overdue";
+    public static final String QUEUE_TASK_NOTIFICATIONS = RabbitMQConstants.QUEUE_TASK_NOTIFICATIONS;
+    public static final String EXCHANGE_TASKS = RabbitMQConstants.EXCHANGE_TASKS;
+    public static final String ROUTING_KEY_TASK_DUE_SOON = RabbitMQConstants.ROUTING_KEY_TASK_DUE_SOON;
+    public static final String ROUTING_KEY_TASK_OVERDUE = RabbitMQConstants.ROUTING_KEY_TASK_OVERDUE;
 
     @Bean
     public Binding taskOverdueBinding(Queue taskNotificationsQueue, DirectExchange tasksExchange) {

@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 import com.phuonghieuto.backend.auth_service.model.user.enums.ConfigurationParameter;
-import com.phuonghieuto.backend.auth_service.service.impl.FileKeyProvider;
+import com.phuonghieuto.backend.auth_service.security.FileKeyProvider;
 import com.phuonghieuto.backend.auth_service.util.KeyConverter;
 
 import java.security.PrivateKey;

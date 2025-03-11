@@ -1,12 +1,12 @@
-package com.phuonghieuto.backend.notification_service.config;
+package com.phuonghieuto.backend.notification_service.messaging.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
-import com.phuonghieuto.backend.notification_service.websocket.NotificationWebSocketHandler;
-import com.phuonghieuto.backend.notification_service.websocket.WebSocketAuthInterceptor;
+import com.phuonghieuto.backend.notification_service.messaging.websocket.NotificationWebSocketHandler;
+import com.phuonghieuto.backend.notification_service.messaging.websocket.WebSocketAuthInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
