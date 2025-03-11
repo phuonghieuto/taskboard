@@ -10,4 +10,7 @@ public class RabbitMQConstants {
     // Routing keys
     public static final String ROUTING_KEY_TASK_DUE_SOON = "task.due.soon";
     public static final String ROUTING_KEY_TASK_OVERDUE = "task.overdue";
+
+    public static final String ROUTING_KEY_BOARD_INVITATION = "board.invitation";
+
 }

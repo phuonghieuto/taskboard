@@ -1,6 +1,8 @@
 package com.phuonghieuto.backend.task_service.messaging.producer;
 
 import com.phuonghieuto.backend.task_service.messaging.config.RabbitMQConfig;
+import com.phuonghieuto.backend.task_service.model.collaboration.entity.BoardInvitationEntity;
+import com.phuonghieuto.backend.task_service.model.notification.dto.BoardInvitationNotificationDTO;
 import com.phuonghieuto.backend.task_service.model.notification.dto.TaskNotificationDTO;
 import com.phuonghieuto.backend.task_service.model.notification.enums.NotificationType;
 import com.phuonghieuto.backend.task_service.model.task.entity.TaskEntity;
@@ -31,24 +33,14 @@ public class NotificationProducer {
             Map<String, Object> additionalData = new HashMap<>();
             additionalData.put("dueDate", task.getDueDate().toString());
 
-            TaskNotificationDTO notification = TaskNotificationDTO.builder()
-                    .type(NotificationType.TASK_DUE_SOON)
-                    .taskId(task.getId())
-                    .taskTitle(task.getTitle())
-                    .boardId(task.getTable().getBoard().getId())
-                    .boardName(task.getTable().getBoard().getName())
-                    .tableId(task.getTable().getId())
-                    .tableName(task.getTable().getName())
-                    .recipientId(task.getAssignedUserId())
-                    .dueDate(task.getDueDate())
-                    .additionalData(additionalData)
-                    .build();
+            TaskNotificationDTO notification = TaskNotificationDTO.builder().type(NotificationType.TASK_DUE_SOON)
+                    .taskId(task.getId()).taskTitle(task.getTitle()).boardId(task.getTable().getBoard().getId())
+                    .boardName(task.getTable().getBoard().getName()).tableId(task.getTable().getId())
+                    .tableName(task.getTable().getName()).recipientId(task.getAssignedUserId())
+                    .dueDate(task.getDueDate()).additionalData(additionalData).build();
 
-            rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.EXCHANGE_TASKS,
-                    RabbitMQConfig.ROUTING_KEY_TASK_DUE_SOON,
-                    notification
-            );
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_TASKS, RabbitMQConfig.ROUTING_KEY_TASK_DUE_SOON,
+                    notification);
 
             log.info("Sent due soon notification for task ID: {} to queue", task.getId());
         } catch (Exception e) {
@@ -56,40 +48,57 @@ public class NotificationProducer {
         }
     }
 
-        public void sendTaskOverdueNotification(TaskEntity task) {
+    public void sendTaskOverdueNotification(TaskEntity task) {
         try {
             if (task.getAssignedUserId() == null) {
                 log.info("Task {} has no assigned user, skipping overdue notification", task.getId());
                 return;
             }
-    
+
             Map<String, Object> additionalData = new HashMap<>();
             additionalData.put("dueDate", task.getDueDate().toString());
-            additionalData.put("daysOverdue", 
-                ChronoUnit.DAYS.between(task.getDueDate(), LocalDateTime.now()));
-    
-            TaskNotificationDTO notification = TaskNotificationDTO.builder()
-                    .type(NotificationType.TASK_OVERDUE)
-                    .taskId(task.getId())
-                    .taskTitle(task.getTitle())
-                    .boardId(task.getTable().getBoard().getId())
-                    .boardName(task.getTable().getBoard().getName())
-                    .tableId(task.getTable().getId())
-                    .tableName(task.getTable().getName())
-                    .recipientId(task.getAssignedUserId())
-                    .dueDate(task.getDueDate())
-                    .additionalData(additionalData)
-                    .build();
-    
-            rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.EXCHANGE_TASKS,
-                    RabbitMQConfig.ROUTING_KEY_TASK_OVERDUE,
-                    notification
-            );
-    
+            additionalData.put("daysOverdue", ChronoUnit.DAYS.between(task.getDueDate(), LocalDateTime.now()));
+
+            TaskNotificationDTO notification = TaskNotificationDTO.builder().type(NotificationType.TASK_OVERDUE)
+                    .taskId(task.getId()).taskTitle(task.getTitle()).boardId(task.getTable().getBoard().getId())
+                    .boardName(task.getTable().getBoard().getName()).tableId(task.getTable().getId())
+                    .tableName(task.getTable().getName()).recipientId(task.getAssignedUserId())
+                    .dueDate(task.getDueDate()).additionalData(additionalData).build();
+
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_TASKS, RabbitMQConfig.ROUTING_KEY_TASK_OVERDUE,
+                    notification);
+
             log.info("Sent overdue notification for task ID: {} to queue", task.getId());
         } catch (Exception e) {
             log.error("Failed to send task overdue notification: {}", e.getMessage(), e);
+        }
+    }
+
+    public void sendBoardInvitationNotification(BoardInvitationEntity invitation, String inviterName) {
+        try {
+            String boardUrl = "/board-invitations/token/" + invitation.getToken();
+            
+            BoardInvitationNotificationDTO notification = BoardInvitationNotificationDTO.builder()
+                    .invitationId(invitation.getId())
+                    .boardId(invitation.getBoard().getId())
+                    .boardName(invitation.getBoard().getName())
+                    .inviterUserId(invitation.getInviterUserId())
+                    .inviterName(inviterName)
+                    .inviteeEmail(invitation.getInviteeEmail())
+                    .token(invitation.getToken())
+                    .expiresAt(invitation.getExpiresAt())
+                    .invitationUrl(boardUrl)
+                    .build();
+            
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.EXCHANGE_TASKS,
+                    RabbitMQConfig.ROUTING_KEY_BOARD_INVITATION,
+                    notification
+            );
+            
+            log.info("Sent board invitation notification for board ID: {} to queue", invitation.getBoard().getId());
+        } catch (Exception e) {
+            log.error("Failed to send board invitation notification: {}", e.getMessage(), e);
         }
     }
 }

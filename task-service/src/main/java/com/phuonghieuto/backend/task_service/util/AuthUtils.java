@@ -41,4 +41,13 @@ public class AuthUtils {
         }
         throw new UnauthorizedAccessException("User not authenticated");
     }
+
+    public String getCurrentUserFullName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            return jwt.getClaim(TokenClaims.USER_FIRST_NAME.getValue()) + " " + jwt.getClaim(TokenClaims.USER_LAST_NAME.getValue());
+        }
+        throw new UnauthorizedAccessException("User not authenticated");
+    }
 }

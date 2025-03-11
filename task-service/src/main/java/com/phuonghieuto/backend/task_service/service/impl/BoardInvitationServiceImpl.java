@@ -3,6 +3,7 @@ package com.phuonghieuto.backend.task_service.service.impl;
 import com.phuonghieuto.backend.task_service.exception.DuplicateInvitationException;
 import com.phuonghieuto.backend.task_service.exception.InvitationNotFoundException;
 import com.phuonghieuto.backend.task_service.exception.UnauthorizedAccessException;
+import com.phuonghieuto.backend.task_service.messaging.producer.NotificationProducer;
 import com.phuonghieuto.backend.task_service.model.collaboration.dto.request.BoardInvitationRequestDTO;
 import com.phuonghieuto.backend.task_service.model.collaboration.dto.response.BoardInvitationResponseDTO;
 import com.phuonghieuto.backend.task_service.model.collaboration.entity.BoardInvitationEntity;
@@ -38,6 +39,7 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     private final BoardInvitationRepository boardInvitationRepository;
     private final EntityAccessControlService accessControlService;
     private final AuthUtils authUtils;
+    private final NotificationProducer notificationProducer;
     private final BoardInvitationEntityToResponseMapper invitationMapper = BoardInvitationEntityToResponseMapper
             .initialize();
 
@@ -73,7 +75,9 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
 
         BoardInvitationEntity savedInvitation = boardInvitationRepository.save(invitation);
         log.info("Created board invitation: {}", savedInvitation.getId());
-
+        
+        String inviterName = authUtils.getCurrentUserFullName();
+        notificationProducer.sendBoardInvitationNotification(savedInvitation, inviterName);
         return invitationMapper.map(savedInvitation);
     }
 
