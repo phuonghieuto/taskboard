@@ -22,7 +22,8 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final RegisterRequestToUserEntityMapper registerRequestToUserEntityMapper = RegisterRequestToUserEntityMapper.initialize();
+    private final RegisterRequestToUserEntityMapper registerRequestToUserEntityMapper = RegisterRequestToUserEntityMapper
+            .initialize();
     private final UserEntityToUserMapper userEntityToUserMapper = UserEntityToUserMapper.initialize();
     private final PasswordEncoder passwordEncoder;
 
@@ -30,11 +31,13 @@ public class UserServiceImpl implements UserService {
     public User registerUser(RegisterRequestDTO registerRequest) {
 
         if (userRepository.existsUserEntityByEmail(registerRequest.getEmail())) {
-            throw new UserAlreadyExistException("The email is already used for another account: " + registerRequest.getEmail());
+            throw new UserAlreadyExistException(
+                    "The email is already used for another account: " + registerRequest.getEmail());
         }
 
         if (userRepository.existsUserEntityByUsername(registerRequest.getUsername())) {
-            throw new UserAlreadyExistException("The username is already used for another account: " + registerRequest.getUsername());
+            throw new UserAlreadyExistException(
+                    "The username is already used for another account: " + registerRequest.getUsername());
         }
 
         final UserEntity userEntityToBeSave = registerRequestToUserEntityMapper.mapForSaving(registerRequest);
@@ -49,14 +52,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEmailDTO getUserEmail(String userId) {
         log.info("UserServiceImpl | getUserEmail | userId: {}", userId);
-        
+
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
-        
-        return UserEmailDTO.builder()
-                .userId(userEntity.getId())
-                .email(userEntity.getEmail())
-                .build();
+
+        return UserEmailDTO.builder().userId(userEntity.getId()).email(userEntity.getEmail()).build();
+    }
+
+    @Override
+    public UserEmailDTO getUserIdFromEmail(String email) {
+        log.info("UserServiceImpl | getUserIdFromEmail | email: {}", email);
+
+        UserEntity userEntity = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+
+        return UserEmailDTO.builder().userId(userEntity.getId()).email(userEntity.getEmail()).build();
     }
 
 }

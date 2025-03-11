@@ -173,4 +173,53 @@ public class UserController {
         log.info("UserController | getUserEmail | userId: {}", userId);
         return userService.getUserEmail(userId);
     }
+
+        @Operation(
+        summary = "Get user ID by email", 
+        description = "Retrieves the user ID associated with the specified email address"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200", 
+            description = "User ID retrieved successfully", 
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = UserEmailDTO.class),
+                examples = @ExampleObject(
+                    value = """
+                    {
+                      "userId": "1234567890",
+                      "email": "john.doe@example.com"
+                    }
+                    """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404", 
+            description = "User not found", 
+            content = @Content(
+                mediaType = "application/json",
+                examples = @ExampleObject(
+                    value = """
+                    {
+                      "success": false,
+                      "error": {
+                        "status": 404,
+                        "message": "User not found with email: john.doe@example.com",
+                        "details": null
+                      },
+                      "timestamp": "2024-05-25T14:30:00.000Z",
+                      "path": "/api/v1/users/by-email?email=john.doe@example.com"
+                    }
+                    """
+                )
+            )
+        )
+    })
+    @GetMapping("/by-email")
+    public UserEmailDTO getUserIdFromEmail(@RequestParam String email) {
+        log.info("UserController | getUserIdFromEmail | email: {}", email);
+        return userService.getUserIdFromEmail(email);
+    }
 }

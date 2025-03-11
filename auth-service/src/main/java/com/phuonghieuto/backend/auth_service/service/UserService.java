@@ -9,4 +9,5 @@ import com.phuonghieuto.backend.auth_service.model.user.dto.response.UserEmailDT
 public interface UserService {
     User registerUser(final RegisterRequestDTO registerRequest);
     UserEmailDTO getUserEmail(String userId);
+    UserEmailDTO getUserIdFromEmail(String email);
 }
