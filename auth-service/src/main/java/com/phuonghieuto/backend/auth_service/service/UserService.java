@@ -10,4 +10,5 @@ public interface UserService {
     User registerUser(final RegisterRequestDTO registerRequest);
     UserEmailDTO getUserEmail(String userId);
     UserEmailDTO getUserIdFromEmail(String email);
+    public boolean confirmEmail(String token);
 }

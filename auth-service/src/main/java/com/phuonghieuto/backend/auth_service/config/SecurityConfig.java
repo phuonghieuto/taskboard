@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/auth/authenticate").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users/*/email").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users/by-email").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/confirm-email").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(customBearerTokenAuthenticationFilter, BearerTokenAuthenticationFilter.class);

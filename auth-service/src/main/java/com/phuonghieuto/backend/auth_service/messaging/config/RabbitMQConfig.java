@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.notification_service.messaging.config;
+package com.phuonghieuto.backend.auth_service.messaging.config;
 
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -8,7 +8,7 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.phuonghieuto.backend.notification_service.model.common.rabbitmq.RabbitMQConstants;
+import com.phuonghieuto.backend.auth_service.model.common.rabbitmq.RabbitMQConstants;
 
 @Configuration
 public class RabbitMQConfig {
@@ -18,13 +18,10 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY_TASK_DUE_SOON = RabbitMQConstants.ROUTING_KEY_TASK_DUE_SOON;
     public static final String ROUTING_KEY_TASK_OVERDUE = RabbitMQConstants.ROUTING_KEY_TASK_OVERDUE;
     public static final String ROUTING_KEY_BOARD_INVITATION = RabbitMQConstants.ROUTING_KEY_BOARD_INVITATION;
+
     public static final String EXCHANGE_NOTIFICATION = RabbitMQConstants.EXCHANGE_NOTIFICATION;
     public static final String QUEUE_EMAIL_CONFIRMATION = RabbitMQConstants.QUEUE_EMAIL_CONFIRMATION;
     public static final String ROUTING_KEY_EMAIL_CONFIRMATION = RabbitMQConstants.ROUTING_KEY_EMAIL_CONFIRMATION;
-    @Bean
-    public Binding taskOverdueBinding(Queue taskNotificationsQueue, DirectExchange tasksExchange) {
-        return BindingBuilder.bind(taskNotificationsQueue).to(tasksExchange).with(ROUTING_KEY_TASK_OVERDUE);
-    }
 
     @Bean
     public Queue taskNotificationsQueue() {
@@ -51,6 +48,11 @@ public class RabbitMQConfig {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(jsonMessageConverter());
         return rabbitTemplate;
+    }
+
+    @Bean
+    public Binding taskOverdueBinding(Queue taskNotificationsQueue, DirectExchange tasksExchange) {
+        return BindingBuilder.bind(taskNotificationsQueue).to(tasksExchange).with(ROUTING_KEY_TASK_OVERDUE);
     }
 
     @Bean

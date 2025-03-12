@@ -29,83 +29,76 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final TokenGenerationService tokenGenerationService;
-    private final TokenValidationService tokenValidationService;
-    private final TokenManagementService tokenManagementService;
-    private final TokenToTokenResponseMapper tokenToTokenResponseMapper = TokenToTokenResponseMapper.initialize();
+        private final UserRepository userRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final TokenGenerationService tokenGenerationService;
+        private final TokenValidationService tokenValidationService;
+        private final TokenManagementService tokenManagementService;
+        private final TokenToTokenResponseMapper tokenToTokenResponseMapper = TokenToTokenResponseMapper.initialize();
 
-    @Override
-    public TokenResponseDTO login(LoginRequestDTO loginRequest) {
-        final UserEntity userEntityFromDB = userRepository
-                .findUserEntityByEmail(loginRequest.getEmail())
-                .orElseThrow(
-                        () -> new UserNotFoundException("Can't find with given email: "
-                                + loginRequest.getEmail())
-                );
-        if (Boolean.FALSE.equals(passwordEncoder.matches(
-                loginRequest.getPassword(), userEntityFromDB.getPassword()))) {
-            throw new PasswordNotValidException();
+        @Override
+        public TokenResponseDTO login(LoginRequestDTO loginRequest) {
+                final UserEntity userEntityFromDB = userRepository.findUserEntityByEmail(loginRequest.getEmail())
+                                .orElseThrow(() -> new UserNotFoundException(
+                                                "Can't find with given email: " + loginRequest.getEmail()));
+                if (Boolean.FALSE.equals(
+                                passwordEncoder.matches(loginRequest.getPassword(), userEntityFromDB.getPassword()))) {
+                        throw new PasswordNotValidException();
+                }
+
+                if (!userEntityFromDB.isEmailConfirmed()) {
+                        throw new UserStatusNotValidException(
+                                        "Email not confirmed. Please check your email to activate your account.");
+                }
+
+                validateUserStatus(userEntityFromDB);
+
+                Token token = tokenGenerationService.generateToken(userEntityFromDB.getClaims());
+                TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
+                return tokenResponse;
         }
 
-        Token token = tokenGenerationService.generateToken(userEntityFromDB.getClaims());
-        TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
-        return tokenResponse;
-    }
+        @Override
+        public TokenResponseDTO refreshToken(TokenRefreshRequestDTO tokenRefreshRequest) {
 
-    @Override
-    public TokenResponseDTO refreshToken(TokenRefreshRequestDTO tokenRefreshRequest) {
+                tokenValidationService.verifyAndValidate(tokenRefreshRequest.getRefreshToken());
 
-        tokenValidationService.verifyAndValidate(tokenRefreshRequest.getRefreshToken());
+                final String userId = tokenValidationService.getPayload(tokenRefreshRequest.getRefreshToken())
+                                .get(TokenClaims.USER_ID.getValue()).toString();
 
-        final String userId = tokenValidationService
-                .getPayload(tokenRefreshRequest.getRefreshToken())
-                .get(TokenClaims.USER_ID.getValue())
-                .toString();
+                final UserEntity userEntityFromDB = userRepository.findById(userId)
+                                .orElseThrow(UserNotFoundException::new);
 
-        final UserEntity userEntityFromDB = userRepository
-                .findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+                validateUserStatus(userEntityFromDB);
 
-        validateUserStatus(userEntityFromDB);
+                Token token = tokenGenerationService.generateToken(userEntityFromDB.getClaims(),
+                                tokenRefreshRequest.getRefreshToken());
 
-        Token token = tokenGenerationService.generateToken(
-                userEntityFromDB.getClaims(),
-                tokenRefreshRequest.getRefreshToken()
-        );
-
-        TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
-        return tokenResponse;
-    }
-
-    @Override
-    public void logout(TokenInvalidateRequestDTO tokenInvalidateRequest) {
-        tokenValidationService.verifyAndValidate(
-                Set.of(
-                        tokenInvalidateRequest.getAccessToken(),
-                        tokenInvalidateRequest.getRefreshToken()
-                )
-        );
-
-        final String accessTokenId = tokenValidationService
-                .getPayload(tokenInvalidateRequest.getAccessToken())
-                .getId();
-
-        tokenManagementService.checkForInvalidityOfToken(accessTokenId);
-
-        final String refreshTokenId = tokenValidationService
-                .getPayload(tokenInvalidateRequest.getRefreshToken())
-                .getId();
-
-        tokenManagementService.checkForInvalidityOfToken(refreshTokenId);
-
-        tokenManagementService.invalidateTokens(Set.of(accessTokenId, refreshTokenId));
-    }
-
-    private void validateUserStatus(final UserEntity userEntity) {
-        if (!(UserStatus.ACTIVE.equals(userEntity.getUserStatus()))) {
-            throw new UserStatusNotValidException("UserStatus = " + userEntity.getUserStatus());
+                TokenResponseDTO tokenResponse = tokenToTokenResponseMapper.map(token);
+                return tokenResponse;
         }
-    }
+
+        @Override
+        public void logout(TokenInvalidateRequestDTO tokenInvalidateRequest) {
+                tokenValidationService.verifyAndValidate(Set.of(tokenInvalidateRequest.getAccessToken(),
+                                tokenInvalidateRequest.getRefreshToken()));
+
+                final String accessTokenId = tokenValidationService.getPayload(tokenInvalidateRequest.getAccessToken())
+                                .getId();
+
+                tokenManagementService.checkForInvalidityOfToken(accessTokenId);
+
+                final String refreshTokenId = tokenValidationService
+                                .getPayload(tokenInvalidateRequest.getRefreshToken()).getId();
+
+                tokenManagementService.checkForInvalidityOfToken(refreshTokenId);
+
+                tokenManagementService.invalidateTokens(Set.of(accessTokenId, refreshTokenId));
+        }
+
+        private void validateUserStatus(final UserEntity userEntity) {
+                if (!(UserStatus.ACTIVE.equals(userEntity.getUserStatus()))) {
+                        throw new UserStatusNotValidException("UserStatus = " + userEntity.getUserStatus());
+                }
+        }
 }

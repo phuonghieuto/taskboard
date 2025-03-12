@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.notification_service.model.common.rabbitmq;
+package com.phuonghieuto.backend.auth_service.model.common.rabbitmq;
 
 public class RabbitMQConstants {
     // Queue names
@@ -12,7 +12,9 @@ public class RabbitMQConstants {
     public static final String ROUTING_KEY_TASK_OVERDUE = "task.overdue";
 
     public static final String ROUTING_KEY_BOARD_INVITATION = "board.invitation";
+
     public static final String EXCHANGE_NOTIFICATION = "notification.exchange";
     public static final String QUEUE_EMAIL_CONFIRMATION = "email.confirmation.queue";
     public static final String ROUTING_KEY_EMAIL_CONFIRMATION = "email.confirmation";
+    
 }

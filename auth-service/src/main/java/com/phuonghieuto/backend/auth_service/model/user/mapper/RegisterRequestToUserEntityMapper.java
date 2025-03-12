@@ -18,6 +18,7 @@ public interface RegisterRequestToUserEntityMapper extends BaseMapper<RegisterRe
                 .email(userRegisterRequest.getEmail())
                 .firstName(userRegisterRequest.getFirstName())
                 .lastName(userRegisterRequest.getLastName())
+                .username(userRegisterRequest.getUsername())
                 .phoneNumber(userRegisterRequest.getPhoneNumber())
                 .build();
     }

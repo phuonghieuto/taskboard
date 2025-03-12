@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.phuonghieuto.backend.auth_service.model.common.entity.BaseEntity;
 import com.phuonghieuto.backend.auth_service.model.user.enums.TokenClaims;
@@ -56,6 +58,18 @@ public class UserEntity extends BaseEntity {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus = UserStatus.ACTIVE;
+
+    @Builder.Default
+    @Column(name = "EMAIL_CONFIRMED")
+    private boolean emailConfirmed = false;
+
+    @Builder.Default
+    @Column(name = "CONFIRMATION_TOKEN")
+    private String confirmationToken = UUID.randomUUID().toString();
+
+    @Builder.Default
+    @Column(name = "CONFIRMATION_TOKEN_EXPIRY")
+    private LocalDateTime confirmationTokenExpiry = LocalDateTime.now().plusHours(24);
 
     /**
      * Constructs a map of claims based on the user's attributes.

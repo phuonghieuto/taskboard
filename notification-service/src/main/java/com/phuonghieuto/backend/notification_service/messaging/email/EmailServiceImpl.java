@@ -133,4 +133,28 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send board invitation email: {}", e.getMessage(), e);
         }
     }
+
+        @Override
+    public void sendEmailConfirmation(String email, String name, String token) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            
+            helper.setFrom(fromEmail);
+            helper.setTo(email);
+            helper.setSubject("Confirm Your TaskManagement Account");
+            
+            Context context = new Context();
+            context.setVariable("name", name);
+            context.setVariable("confirmationUrl", frontendUrl + "/confirm-email?token=" + token);
+            
+            String emailContent = templateEngine.process("email/email-confirmation", context);
+            helper.setText(emailContent, true);
+            
+            mailSender.send(message);
+            log.info("Email confirmation sent to {}", email);
+        } catch (MessagingException e) {
+            log.error("Failed to send email confirmation: {}", e.getMessage(), e);
+        }
+    }
 }

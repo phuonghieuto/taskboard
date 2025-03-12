@@ -8,4 +8,5 @@ public interface EmailService {
     void sendTaskDueSoonEmail(TaskNotificationDTO notification, String userEmail);
     void sendTaskOverdueEmail(TaskNotificationDTO notification, String userEmail);
     void sendBoardInvitationEmail(String recipientEmail, String inviterName, String boardName, String boardUrl);
+    void sendEmailConfirmation(String email, String name, String token);
 }
