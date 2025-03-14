@@ -20,9 +20,10 @@ public class GatewayConfig {
 
         // Public endpoints that do not require authentication
         private final List<String> PUBLIC_ENDPOINTS = Arrays.asList("/api/v1/users/register", "/api/v1/users/*/email",
-                        "/api/v1/users/by-email","/api/v1/users/confirm-email", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                        "/api/v1/auth/api-docs", "/api/v1/tasks/api-docs", "/api/v1/notifications/api-docs",
-                        "/api/v1/ws-notifications/**");
+                        "/api/v1/users/by-email", "/api/v1/users/confirm-email", "/v3/api-docs/**", "/swagger-ui/**",
+                        "/swagger-ui.html", "/api/v1/auth/api-docs", "/api/v1/tasks/api-docs",
+                        "/api/v1/notifications/api-docs", "/api/v1/ws-notifications/**", "/api/v1/login-page",
+                        "/api/v1/oauth2/**");
 
         @Bean
         public RouteLocator routes(RouteLocatorBuilder builder) {
@@ -31,6 +32,9 @@ public class GatewayConfig {
                                                 f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
                                                                 .setPublicEndpoints(PUBLIC_ENDPOINTS))))
                                                 .uri("lb://auth-service"))
+                                .route("auth-service", r -> r.path("/api/v1/login-page").uri("lb://auth-service"))
+                                .route("auth-service", r -> r.path("/api/v1/oauth2/**").uri("lb://auth-service"))
+                                .route("auth-service", r -> r.path("/api/v1/login/oauth2/code/*").uri("lb://auth-service"))
                                 .route("task-service", r -> r.path("/api/v1/tasks/**").filters(
                                                 f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
                                                                 .setPublicEndpoints(PUBLIC_ENDPOINTS))))

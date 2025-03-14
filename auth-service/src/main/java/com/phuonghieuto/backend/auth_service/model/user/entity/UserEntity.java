@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.phuonghieuto.backend.auth_service.model.common.entity.BaseEntity;
+import com.phuonghieuto.backend.auth_service.model.user.enums.AuthProvider;
 import com.phuonghieuto.backend.auth_service.model.user.enums.TokenClaims;
 import com.phuonghieuto.backend.auth_service.model.user.enums.UserStatus;
 import com.phuonghieuto.backend.auth_service.model.user.enums.UserType;
@@ -45,16 +46,13 @@ public class UserEntity extends BaseEntity {
     @Column(name = "LAST_NAME")
     private String lastName;
 
-    @Column(
-            name = "PHONE_NUMBER",
-            length = 20
-    )
+    @Column(name = "PHONE_NUMBER", length = 20)
     private String phoneNumber;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private UserType userType = UserType.USER;
-    
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private UserStatus userStatus = UserStatus.ACTIVE;
@@ -71,9 +69,18 @@ public class UserEntity extends BaseEntity {
     @Column(name = "CONFIRMATION_TOKEN_EXPIRY")
     private LocalDateTime confirmationTokenExpiry = LocalDateTime.now().plusHours(24);
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "provider")
+    private AuthProvider provider = AuthProvider.LOCAL; // Default to LOCAL
+
+    @Column(name = "provider_id")
+    private String providerId;
+
     /**
-     * Constructs a map of claims based on the user's attributes.
-     * This map is typically used to create JWT claims for the user.
+     * Constructs a map of claims based on the user's attributes. This map is
+     * typically used to create JWT claims for the user.
+     * 
      * @return a map of claims containing user attributes
      */
     public Map<String, Object> getClaims() {

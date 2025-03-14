@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth2 Login Success</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4285f4;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            overflow-x: auto;
+        }
+        .success {
+            color: #34A853;
+            font-weight: bold;
+        }
+        .token-container {
+            margin-top: 20px;
+        }
+        .redirect-message {
+            margin-top: 30px;
+            font-style: italic;
+            color: #777;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #34A853;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OAuth2 Login <span class="success">Successful!</span></h1>
+        
+        <p>You have been successfully authenticated. Your token has been received.</p>
+        
+        <div class="token-container">
+            <h3>Access Token:</h3>
+            <pre id="accessToken">Loading...</pre>
+            
+            <h3>Refresh Token:</h3>
+            <pre id="refreshToken">Loading...</pre>
+        </div>
+
+        <p class="redirect-message">
+            Redirecting to dashboard <span class="loading"></span>
+        </p>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const refreshToken = urlParams.get('refresh_token');
+            
+            // Display tokens
+            document.getElementById('accessToken').textContent = token || 'No token received';
+            document.getElementById('refreshToken').textContent = refreshToken || 'No refresh token received';
+            
+            // Store tokens in localStorage
+            if (token) {
+                localStorage.setItem('accessToken', token);
+            }
+            if (refreshToken) {
+                localStorage.setItem('refreshToken', refreshToken);
+            }
+        });
+    </script>
+</body>
+</html>

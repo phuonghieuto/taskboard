@@ -18,13 +18,45 @@ spring:
     port: ${RABBITMQ_PORT}
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
+  security:
+    oauth2:
+      client:
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://www.googleapis.com/oauth2/v4/token
+            jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: id
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: http://localhost:8080/api/v1/login/oauth2/code/google
+            # redirect-uri: "{baseUrl}/login/oauth2/callback/{registrationId}"
+            scope:
+              - email
+              - profile
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            redirect-uri: http://localhost:8080/api/v1/login/oauth2/code/github
+            # redirect-uri: "{baseUrl}/login/oauth2/callback/{registrationId}"
+            scope:
+              - user:email
+              - read:user
 logging:
   file:
     name: src/main/resources/script/stage_log.log
   level:
     org:
       hibernate:
-        SQL: DEBUG
+        SQL: OFF
       springframework:
         web: DEBUG
         data: DEBUG
@@ -38,6 +70,7 @@ server:
   port: 8081
   servlet:
     context-path: /api/v1
+  forward-headers-strategy: framework
 
 eureka:
   client:
@@ -58,3 +91,9 @@ openapi:
     title: Auth Service API Documentation
     version: 1.0.0
     url: http://localhost:8080 # API Gateway URL
+
+# App properties
+app:
+  oauth2:
+    # Use a comma-separated string instead of a list
+    authorizedRedirectUrisString: "http://localhost:8080/api/v1/oauth2/redirect,http://localhost:8081/api/v1/oauth2/redirect"
