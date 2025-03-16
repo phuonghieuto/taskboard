@@ -25,7 +25,7 @@ public class TokenValidationServiceImpl implements TokenValidationService {
     private final TokenConfigurationParameter tokenConfigurationParameter;
     private final TokenManagementService tokenManagementService;
     @Override
-    public void verifyAndValidate(String jwt) {
+    public boolean verifyAndValidate(String jwt) {
         try {
             tokenManagementService.checkForInvalidityOfToken(getId(jwt));
             Jws<Claims> claimsJws = Jwts.parserBuilder()
@@ -41,6 +41,7 @@ public class TokenValidationServiceImpl implements TokenValidationService {
             }
 
             log.info("Token is valid");
+            return true;
 
         } catch (ExpiredJwtException e) {
             log.error("Token has expired", e);
@@ -58,8 +59,13 @@ public class TokenValidationServiceImpl implements TokenValidationService {
     }
 
     @Override
-    public void verifyAndValidate(Set<String> jwts) {
-        jwts.forEach(this::verifyAndValidate);
+    public boolean verifyAndValidate(Set<String> jwts) {
+        for (String jwt : jwts) {
+            if (!verifyAndValidate(jwt)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

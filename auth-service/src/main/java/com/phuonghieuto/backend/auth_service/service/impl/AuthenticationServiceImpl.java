@@ -34,7 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         private final TokenGenerationService tokenGenerationService;
         private final TokenValidationService tokenValidationService;
         private final TokenManagementService tokenManagementService;
-        private final TokenToTokenResponseMapper tokenToTokenResponseMapper = TokenToTokenResponseMapper.initialize();
+        private final TokenToTokenResponseMapper tokenToTokenResponseMapper;
 
         @Override
         public TokenResponseDTO login(LoginRequestDTO loginRequest) {

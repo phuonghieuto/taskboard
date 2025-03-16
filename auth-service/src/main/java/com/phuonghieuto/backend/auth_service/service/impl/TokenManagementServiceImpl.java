@@ -28,12 +28,14 @@ public class TokenManagementServiceImpl implements TokenManagementService {
     }
 
     @Override
-    public void checkForInvalidityOfToken(String tokenId) {
+    public boolean checkForInvalidityOfToken(String tokenId) {
         log.info("Checking for invalidity of token with ID: {}", tokenId);
         final boolean isTokenInvalid = invalidTokenRepository.findByTokenId(tokenId).isPresent();
 
         if (isTokenInvalid) {
             throw new TokenAlreadyInvalidatedException(tokenId);
         }
+
+        return isTokenInvalid;
     }
 }

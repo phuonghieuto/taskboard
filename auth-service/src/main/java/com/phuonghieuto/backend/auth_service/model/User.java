@@ -26,4 +26,5 @@ public class User extends BaseDomainModel {
     private UserType userType;
     private UserStatus userStatus;
     private String password;
+    private boolean emailConfirmed;
 }

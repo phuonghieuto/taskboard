@@ -3,6 +3,7 @@ package com.phuonghieuto.backend.auth_service.service.impl;
 import com.phuonghieuto.backend.auth_service.config.TokenConfigurationParameter;
 import com.phuonghieuto.backend.auth_service.service.TokenValidationService;
 import com.phuonghieuto.backend.auth_service.model.user.enums.TokenClaims;
+import com.phuonghieuto.backend.auth_service.model.user.enums.UserType;
 import com.phuonghieuto.backend.auth_service.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -31,25 +32,25 @@ public class TokenServiceImpl implements TokenService {
                 try {
                         tokenValidationService.verifyAndValidate(token);
                         final Jws<Claims> claimsJws = Jwts.parserBuilder()
-                                        .setSigningKey(tokenConfigurationParameter.getPublicKey())
-                                        .build()
+                                        .setSigningKey(tokenConfigurationParameter.getPublicKey()).build()
                                         .parseClaimsJws(token);
                         final JwsHeader<?> jwsHeader = claimsJws.getHeader();
                         final Claims payload = claimsJws.getBody();
 
-                        final Jwt jwt = new Jwt(
-                                        token,
-                                        payload.getIssuedAt().toInstant(),
+                        final Jwt jwt = new Jwt(token, payload.getIssuedAt().toInstant(),
                                         payload.getExpiration().toInstant(),
-                                        Map.of(
-                                                        TokenClaims.TYP.getValue(), jwsHeader.getType(),
+                                        Map.of(TokenClaims.TYP.getValue(), jwsHeader.getType(),
                                                         TokenClaims.ALGORITHM.getValue(), jwsHeader.getAlgorithm()),
                                         payload);
 
                         final String userType = payload.get(TokenClaims.USER_TYPE.getValue(), String.class);
 
                         final ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                        authorities.add(new SimpleGrantedAuthority(userType));
+                        if (userType != null) {
+                                authorities.add(new SimpleGrantedAuthority(userType));
+                        } else {
+                                authorities.add(new SimpleGrantedAuthority(UserType.USER.name()));
+                        }
 
                         return new UsernamePasswordAuthenticationToken(jwt, null, authorities);
                 } catch (Exception e) {

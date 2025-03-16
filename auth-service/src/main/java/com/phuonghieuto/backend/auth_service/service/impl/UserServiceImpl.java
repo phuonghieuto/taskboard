@@ -26,9 +26,8 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final RegisterRequestToUserEntityMapper registerRequestToUserEntityMapper = RegisterRequestToUserEntityMapper
-            .initialize();
-    private final UserEntityToUserMapper userEntityToUserMapper = UserEntityToUserMapper.initialize();
+    private final RegisterRequestToUserEntityMapper registerRequestToUserEntityMapper;
+    private final UserEntityToUserMapper userEntityToUserMapper;
     private final PasswordEncoder passwordEncoder;
     private final NotificationProducer notificationProducer;
     @Override
