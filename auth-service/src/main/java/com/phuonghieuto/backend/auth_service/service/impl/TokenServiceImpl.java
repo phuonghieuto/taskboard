@@ -8,6 +8,7 @@ import com.phuonghieuto.backend.auth_service.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,9 @@ public class TokenServiceImpl implements TokenService {
                         }
 
                         return new UsernamePasswordAuthenticationToken(jwt, null, authorities);
+                } catch (JwtException e) {
+                        log.error("TokenServiceImpl | getAuthentication | Error parsing token: {}", e.getMessage(), e);
+                        throw new JwtException("Invalid JWT token");
                 } catch (Exception e) {
                         log.error("TokenServiceImpl | getAuthentication | Error parsing token: {}", e.getMessage(), e);
                         throw new RuntimeException("Invalid token", e);

@@ -97,3 +97,8 @@ app:
   oauth2:
     # Use a comma-separated string instead of a list
     authorizedRedirectUrisString: "http://localhost:8080/api/v1/oauth2/redirect,http://localhost:8081/api/v1/oauth2/redirect"
+
+auth:
+  keys:
+    public-key-path: ${AUTH_PUBLIC_KEY_PATH}
+    private-key-path: ${AUTH_PRIVATE_KEY_PATH}

@@ -10,9 +10,7 @@ public class PasswordNotValidException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = 7389659106153108528L;
 
-    private static final String DEFAULT_MESSAGE = """
-            Password is not valid!
-            """;
+    private static final String DEFAULT_MESSAGE = "Password is not valid";
 
     /**
      * Constructs a {@code PasswordNotValidException} with the default message.

@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
@@ -31,6 +32,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final NotificationProducer notificationProducer;
     @Override
+    @Transactional
     public User registerUser(RegisterRequestDTO registerRequest) {
 
         if (userRepository.existsUserEntityByEmail(registerRequest.getEmail())) {
@@ -56,6 +58,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserEmailDTO getUserEmail(String userId) {
         log.info("UserServiceImpl | getUserEmail | userId: {}", userId);
 
@@ -66,6 +69,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserEmailDTO getUserIdFromEmail(String email) {
         log.info("UserServiceImpl | getUserIdFromEmail | email: {}", email);
 
@@ -76,6 +80,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public boolean confirmEmail(String token) {
         UserEntity user = userRepository.findByConfirmationToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid confirmation token"));

@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.auth_service.service;
+package com.phuonghieuto.backend.auth_service.unit.service;
 
 import com.phuonghieuto.backend.auth_service.exception.TokenAlreadyInvalidatedException;
 import com.phuonghieuto.backend.auth_service.model.user.entity.InvalidTokenEntity;

@@ -16,6 +16,8 @@ import com.phuonghieuto.backend.auth_service.exception.UserNotFoundException;
 import com.phuonghieuto.backend.auth_service.exception.UserStatusNotValidException;
 import com.phuonghieuto.backend.auth_service.model.common.CustomError;
 
+import io.jsonwebtoken.JwtException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,10 +128,10 @@ public class GlobalExceptionHandler {
         @ExceptionHandler(TokenAlreadyInvalidatedException.class)
         protected ResponseEntity<Object> handleTokenAlreadyInvalidatedException(
                         final TokenAlreadyInvalidatedException ex) {
-                CustomError customError = CustomError.builder().httpStatus(HttpStatus.BAD_REQUEST)
+                CustomError customError = CustomError.builder().httpStatus(HttpStatus.UNAUTHORIZED)
                                 .header(CustomError.Header.API_ERROR.getName()).message(ex.getMessage()).build();
 
-                return new ResponseEntity<>(customError, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(customError, HttpStatus.UNAUTHORIZED);
         }
 
         /**
@@ -172,6 +174,14 @@ public class GlobalExceptionHandler {
                                 .header(CustomError.Header.API_ERROR.getName()).message(ex.getMessage()).build();
 
                 return new ResponseEntity<>(customError, HttpStatus.BAD_REQUEST);
+        }
+
+        @ExceptionHandler(JwtException.class)
+        protected ResponseEntity<Object> handleJwtException(final JwtException ex) {
+                CustomError customError = CustomError.builder().httpStatus(HttpStatus.UNAUTHORIZED)
+                                .header(CustomError.Header.API_ERROR.getName()).message(ex.getMessage()).build();
+
+                return new ResponseEntity<>(customError, HttpStatus.UNAUTHORIZED);
         }
 
 }

@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 public class FileKeyProvider {
     
-    @Value("${auth.keys.public-key-path:${AUTH_PUBLIC_KEY_PATH:keys/public.pem}}")
+    @Value("${auth.keys.public-key-path:/app/keys/public.pem}")
     private String publicKeyPath;
     
     private String publicKey;

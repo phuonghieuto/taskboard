@@ -86,3 +86,8 @@ openapi:
     title: Task Service API Documentation
     version: 1.0.0
     url: http://localhost:8080 # API Gateway URL
+
+auth:
+  keys:
+    public-key-path: ${AUTH_PUBLIC_KEY_PATH}
+    private-key-path: ${AUTH_PRIVATE_KEY_PATH}

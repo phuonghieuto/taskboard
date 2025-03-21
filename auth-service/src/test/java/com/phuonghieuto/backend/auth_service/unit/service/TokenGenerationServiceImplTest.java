@@ -1,4 +1,4 @@
-package com.phuonghieuto.backend.auth_service.service;
+package com.phuonghieuto.backend.auth_service.unit.service;
 
 import com.phuonghieuto.backend.auth_service.config.TokenConfigurationParameter;
 import com.phuonghieuto.backend.auth_service.model.Token;

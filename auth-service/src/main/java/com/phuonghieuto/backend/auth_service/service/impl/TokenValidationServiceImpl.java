@@ -48,10 +48,10 @@ public class TokenValidationServiceImpl implements TokenValidationService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token has expired", e);
         } catch (JwtException e) {
             log.error("Invalid JWT token", e);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid JWT token", e);
+            throw new JwtException("Invalid JWT token");
         } catch (TokenAlreadyInvalidatedException e) {
             log.error("Token is already invalidated", e);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token is already invalidated", e);
+            throw new TokenAlreadyInvalidatedException();
         } catch (Exception e) {
             log.error("Error validating token", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating token", e);

@@ -90,3 +90,8 @@ openapi:
 
 app:
   frontend-url: ${APP_FRONTEND_URL}
+
+auth:
+  keys:
+    public-key-path: ${AUTH_PUBLIC_KEY_PATH}
+    private-key-path: ${AUTH_PRIVATE_KEY_PATH}

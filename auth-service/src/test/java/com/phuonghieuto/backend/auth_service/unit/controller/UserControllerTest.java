@@ -1,6 +1,7 @@
-package com.phuonghieuto.backend.auth_service.controller;
+package com.phuonghieuto.backend.auth_service.unit.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.phuonghieuto.backend.auth_service.controller.UserController;
 import com.phuonghieuto.backend.auth_service.exception.UserAlreadyExistException;
 import com.phuonghieuto.backend.auth_service.exception.UserNotFoundException;
 import com.phuonghieuto.backend.auth_service.exception.exception_handler.GlobalExceptionHandler;
@@ -20,8 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
