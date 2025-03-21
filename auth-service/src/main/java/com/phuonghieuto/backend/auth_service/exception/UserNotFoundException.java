@@ -19,7 +19,7 @@ public class UserNotFoundException extends RuntimeException {
     }
 
     public UserNotFoundException(final String message) {
-        super(DEFAULT_MESSAGE + " " + message);
+        super(message);
     }
 
 }

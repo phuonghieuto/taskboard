@@ -33,7 +33,7 @@ public class TokenManagementServiceImpl implements TokenManagementService {
         final boolean isTokenInvalid = invalidTokenRepository.findByTokenId(tokenId).isPresent();
 
         if (isTokenInvalid) {
-            throw new TokenAlreadyInvalidatedException(tokenId);
+            throw new TokenAlreadyInvalidatedException();
         }
 
         return isTokenInvalid;

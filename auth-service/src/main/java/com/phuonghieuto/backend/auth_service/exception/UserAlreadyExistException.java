@@ -27,7 +27,7 @@ public class UserAlreadyExistException extends RuntimeException {
      * @param message the detail message
      */
     public UserAlreadyExistException(final String message) {
-        super(DEFAULT_MESSAGE + " " + message);
+        super(message);
     }
 
 }

@@ -27,7 +27,7 @@ public class PasswordNotValidException extends RuntimeException {
      * @param message the detail message
      */
     public PasswordNotValidException(final String message) {
-        super(DEFAULT_MESSAGE + " " + message);
+        super(message);
     }
 
 }

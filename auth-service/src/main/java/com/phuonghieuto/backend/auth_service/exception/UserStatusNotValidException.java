@@ -27,7 +27,7 @@ public class UserStatusNotValidException extends RuntimeException {
      * @param message the detail message
      */
     public UserStatusNotValidException(final String message) {
-        super(DEFAULT_MESSAGE + " " + message);
+        super(message);
     }
 
 }
