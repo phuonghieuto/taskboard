@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @Setter
 @SuperBuilder
-@EqualsAndHashCode(callSuper = true, exclude = {"tables"})
+@EqualsAndHashCode(callSuper = true, exclude = { "tables" })
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -28,7 +28,7 @@ public class BoardEntity extends BaseEntity {
     @Column(name = "OWNER_ID")
     private String ownerId;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "board_users", joinColumns = @JoinColumn(name = "BOARD_ID"))
     @Column(name = "USER_ID")
     private Set<String> collaboratorIds;

@@ -19,9 +19,6 @@ public class RabbitMQConfig {
     public static final String ROUTING_KEY_TASK_OVERDUE = RabbitMQConstants.ROUTING_KEY_TASK_OVERDUE;
     public static final String ROUTING_KEY_BOARD_INVITATION = RabbitMQConstants.ROUTING_KEY_BOARD_INVITATION;
 
-    
-
-
     @Bean
     public Queue taskNotificationsQueue() {
         return new Queue(QUEUE_TASK_NOTIFICATIONS, true);

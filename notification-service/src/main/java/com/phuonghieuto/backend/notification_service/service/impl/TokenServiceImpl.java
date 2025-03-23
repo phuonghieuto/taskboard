@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.phuonghieuto.backend.notification_service.config.TokenConfigurationParameter;
+import com.phuonghieuto.backend.notification_service.model.auth.UserType;
 import com.phuonghieuto.backend.notification_service.model.auth.enums.TokenClaims;
 import com.phuonghieuto.backend.notification_service.service.TokenService;
 
@@ -27,16 +28,14 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class TokenServiceImpl implements TokenService{
+public class TokenServiceImpl implements TokenService {
     private final TokenConfigurationParameter tokenConfigurationParameter;
 
     @Override
     public void validateToken(String token) {
         try {
-            Jws<Claims> claimsJws = Jwts.parserBuilder()
-                    .setSigningKey(tokenConfigurationParameter.getPublicKey())
-                    .build()
-                    .parseClaimsJws(token);
+            Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(tokenConfigurationParameter.getPublicKey())
+                    .build().parseClaimsJws(token);
 
             Claims claims = claimsJws.getBody();
 
@@ -64,29 +63,30 @@ public class TokenServiceImpl implements TokenService{
         log.debug("TokenServiceImpl | getAuthentication | token: {}", token);
         try {
             validateToken(token);
-            
-            final Jws<Claims> claimsJws = Jwts.parserBuilder()
-                    .setSigningKey(tokenConfigurationParameter.getPublicKey())
-                    .build()
-                    .parseClaimsJws(token);
-                    
+
+            final Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(tokenConfigurationParameter.getPublicKey())
+                    .build().parseClaimsJws(token);
+
             final JwsHeader<?> jwsHeader = claimsJws.getHeader();
             final Claims payload = claimsJws.getBody();
 
-            final Jwt jwt = new Jwt(
-                    token,
-                    payload.getIssuedAt().toInstant(),
-                    payload.getExpiration().toInstant(),
-                    Map.of(
-                            TokenClaims.TYP.getValue(), jwsHeader.getType(),
-                            TokenClaims.ALGORITHM.getValue(), jwsHeader.getAlgorithm()),
+            final Jwt jwt = new Jwt(token, payload.getIssuedAt().toInstant(), payload.getExpiration().toInstant(),
+                    Map.of(TokenClaims.TYP.getValue(), jwsHeader.getType(), TokenClaims.ALGORITHM.getValue(),
+                            jwsHeader.getAlgorithm()),
                     payload);
 
             final String userType = payload.get(TokenClaims.USER_TYPE.getValue(), String.class);
             final ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
-            authorities.add(new SimpleGrantedAuthority(userType));
+            if (userType != null) {
+                authorities.add(new SimpleGrantedAuthority(userType));
+            } else {
+                authorities.add(new SimpleGrantedAuthority(UserType.USER.name()));
+            }
 
             return new UsernamePasswordAuthenticationToken(jwt, null, authorities);
+        } catch (JwtException e) {
+            log.error("TokenServiceImpl | getAuthentication | Error parsing token: {}", e.getMessage(), e);
+            throw new JwtException("Invalid JWT token");
         } catch (Exception e) {
             log.error("TokenServiceImpl | getAuthentication | Error parsing token: {}", e.getMessage(), e);
             throw new RuntimeException("Invalid token", e);

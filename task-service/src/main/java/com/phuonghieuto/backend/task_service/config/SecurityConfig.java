@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -39,11 +40,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(
-            final HttpSecurity httpSecurity,
+    public SecurityFilterChain filterChain(final HttpSecurity httpSecurity,
             final CustomBearerTokenAuthenticationFilter customBearerTokenAuthenticationFilter,
-            final CustomAuthenticationEntryPoint customAuthenticationEntryPoint
-    ) throws Exception {
+            final CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
 
         log.debug("Configuring Security Filter Chain");
 
@@ -51,10 +50,10 @@ public class SecurityConfig {
                 .exceptionHandling(customizer -> customizer.authenticationEntryPoint(customAuthenticationEntryPoint))
                 .cors(customizer -> customizer.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(customizer -> customizer.requestMatchers("/tasks/api-docs/**", "/tasks/swagger-ui.html/**", "/tasks/swagger-ui/**")
-                .permitAll()
-                        .anyRequest().authenticated()
-                )
+                .authorizeHttpRequests(customizer -> customizer
+                        .requestMatchers("/tasks/api-docs/**", "/tasks/swagger-ui.html/**", "/tasks/swagger-ui/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/board-invitations/token/*").permitAll().anyRequest().authenticated())
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(customBearerTokenAuthenticationFilter, BearerTokenAuthenticationFilter.class);
 

@@ -23,7 +23,7 @@ public class GatewayConfig {
                         "/api/v1/users/by-email", "/api/v1/users/confirm-email", "/v3/api-docs/**", "/swagger-ui/**",
                         "/swagger-ui.html", "/api/v1/auth/api-docs", "/api/v1/tasks/api-docs",
                         "/api/v1/notifications/api-docs", "/api/v1/ws-notifications/**", "/api/v1/login-page",
-                        "/api/v1/oauth2/**");
+                        "/api/v1/oauth2/**", "/api/v1/board-invitations/token/*");
 
         @Bean
         public RouteLocator routes(RouteLocatorBuilder builder) {
@@ -34,7 +34,8 @@ public class GatewayConfig {
                                                 .uri("lb://auth-service"))
                                 .route("auth-service", r -> r.path("/api/v1/login-page").uri("lb://auth-service"))
                                 .route("auth-service", r -> r.path("/api/v1/oauth2/**").uri("lb://auth-service"))
-                                .route("auth-service", r -> r.path("/api/v1/login/oauth2/code/*").uri("lb://auth-service"))
+                                .route("auth-service",
+                                                r -> r.path("/api/v1/login/oauth2/code/*").uri("lb://auth-service"))
                                 .route("task-service", r -> r.path("/api/v1/tasks/**").filters(
                                                 f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
                                                                 .setPublicEndpoints(PUBLIC_ENDPOINTS))))
@@ -48,6 +49,10 @@ public class GatewayConfig {
                                                                 .setPublicEndpoints(PUBLIC_ENDPOINTS))))
                                                 .uri("lb://task-service"))
                                 .route("task-service", r -> r.path("/api/v1/tasks/**").filters(
+                                                f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
+                                                                .setPublicEndpoints(PUBLIC_ENDPOINTS))))
+                                                .uri("lb://task-service"))
+                                .route("task-service", r -> r.path("/api/v1/board-invitations/**").filters(
                                                 f -> f.filter(jwtAuthFilter.apply(new JwtAuthenticationFilter.Config()
                                                                 .setPublicEndpoints(PUBLIC_ENDPOINTS))))
                                                 .uri("lb://task-service"))

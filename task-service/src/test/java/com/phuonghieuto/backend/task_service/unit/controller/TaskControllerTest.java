@@ -453,7 +453,7 @@ class TaskControllerTest {
 
     @Test
     void getUpcomingTasks_Success() throws Exception {
-        LocalDateTime now = LocalDateTime.now();
+        // LocalDateTime now = LocalDateTime.now();
         // LocalDateTime nextDay = now.plusHours(24);
         
         when(taskService.findByDueDateBetween(any(LocalDateTime.class), any(LocalDateTime.class)))
