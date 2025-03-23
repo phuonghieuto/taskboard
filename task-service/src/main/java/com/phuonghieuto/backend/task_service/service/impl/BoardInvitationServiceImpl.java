@@ -97,7 +97,7 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     @Override
     public List<BoardInvitationResponseDTO> getPendingInvitationsForBoard(String boardId) {
         String currentUserId = authUtils.getCurrentUserId();
-        BoardEntity board = accessControlService.findBoardAndCheckAccess(boardId, currentUserId);
+        accessControlService.findBoardAndCheckAccess(boardId, currentUserId);
 
         List<BoardInvitationEntity> pendingInvitations = boardInvitationRepository.findByBoardIdAndStatusIn(boardId,
                 List.of(InvitationStatus.PENDING));

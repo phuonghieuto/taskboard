@@ -7,7 +7,6 @@ import com.phuonghieuto.backend.auth_service.service.TokenManagementService;
 import com.phuonghieuto.backend.auth_service.service.impl.TokenValidationServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 
 import org.junit.jupiter.api.BeforeEach;

@@ -1,0 +1,51 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+  # Disable RabbitMQ completely for tests
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    enabled: false
+  main:
+    allow-bean-definition-overriding: true
+
+# Disable Eureka client for tests
+eureka:
+  client:
+    enabled: false
+
+# Test-specific token configuration
+token:
+  access-token-expire-minute: 1
+  refresh-token-expire-day: 1
+  # Add these to match your TestConfig
+  private-key-path: in-memory-test-key
+  public-key-path: in-memory-test-key
+
+# Test-specific OAuth2 configuration
+spring.security.oauth2.client:
+  registration:
+    google:
+      client-id: test-client-id
+      client-secret: test-client-secret
+    github:
+      client-id: test-client-id
+      client-secret: test-client-secret
+
+auth:
+  keys:
+    public-key-path: classpath:keys/public.pem
+    private-key-path: classpath:keys/private.pem

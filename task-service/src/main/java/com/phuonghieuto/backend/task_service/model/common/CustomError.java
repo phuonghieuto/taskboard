@@ -78,7 +78,9 @@ public class CustomError {
 
         TASK_NOT_FOUND("TASK_NOT_FOUND"),
 
-        UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS");
+        UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS"),
+
+        DUPLICATE_INVITATION("DUPLICATE_INVITATION");
 
 
         private final String name;

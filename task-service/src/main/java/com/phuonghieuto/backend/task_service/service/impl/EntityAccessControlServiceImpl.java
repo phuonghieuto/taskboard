@@ -25,7 +25,7 @@ public class EntityAccessControlServiceImpl implements EntityAccessControlServic
 
     public BoardEntity findBoardAndCheckAccess(String boardId, String userId) {
         BoardEntity boardEntity = boardRepository.findById(boardId)
-                .orElseThrow(() -> new BoardNotFoundException("Board not found with ID: " + boardId));
+                .orElseThrow(() -> new BoardNotFoundException("Board not found"));
 
         checkBoardAccess(boardEntity, userId);
         return boardEntity;

@@ -1,8 +1,7 @@
-package com.phuonghieuto.backend.auth_service.integration.controller;
+package com.phuonghieuto.backend.auth_service.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phuonghieuto.backend.auth_service.config.TestConfig;
-import com.phuonghieuto.backend.auth_service.integration.BaseIntegrationTest;
 import com.phuonghieuto.backend.auth_service.model.user.dto.request.RegisterRequestDTO;
 import com.phuonghieuto.backend.auth_service.model.user.entity.UserEntity;
 import com.phuonghieuto.backend.auth_service.repository.UserRepository;
