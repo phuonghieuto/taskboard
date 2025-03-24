@@ -2,6 +2,7 @@ package com.phuonghieuto.backend.notification_service.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phuonghieuto.backend.notification_service.client.AuthServiceClient;
+import com.phuonghieuto.backend.notification_service.exception.NotificationNotFoundException;
 import com.phuonghieuto.backend.notification_service.messaging.email.EmailService;
 import com.phuonghieuto.backend.notification_service.messaging.websocket.WebSocketService;
 import com.phuonghieuto.backend.notification_service.model.auth.dto.UserEmailDTO;
@@ -39,25 +40,20 @@ public class NotificationServiceImpl implements NotificationService {
         try {
             String jsonPayload = objectMapper.writeValueAsString(taskNotification);
 
-            NotificationEntity notification = NotificationEntity.builder()
-                    .userId(taskNotification.getRecipientId())
-                    .title("Task Due Soon")
-                    .message("Your task '" + taskNotification.getTaskTitle() + "' is due soon")
-                    .type("TASK_DUE_SOON")
-                    .referenceId(taskNotification.getTaskId())
-                    .referenceType("TASK")
-                    .read(false)
-                    .payload(jsonPayload)
-                    .build();
+            NotificationEntity notification = NotificationEntity.builder().userId(taskNotification.getRecipientId())
+                    .title("Task Due Soon").message("Your task '" + taskNotification.getTaskTitle() + "' is due soon")
+                    .type("TASK_DUE_SOON").referenceId(taskNotification.getTaskId()).referenceType("TASK").read(false)
+                    .payload(jsonPayload).build();
 
             NotificationEntity savedNotification = notificationRepository.save(notification);
 
             // Get user preferences
             NotificationPreferenceEntity preferences = getOrCreateUserPreferences(taskNotification.getRecipientId());
-            
+
             // Check if in quiet hours
             if (preferences.isQuietHoursEnabled() && isInQuietHours(preferences)) {
-                log.info("Not sending notifications during quiet hours for user: {}", taskNotification.getRecipientId());
+                log.info("Not sending notifications during quiet hours for user: {}",
+                        taskNotification.getRecipientId());
                 return savedNotification;
             }
 
@@ -87,41 +83,35 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationEntity createTaskOverdueNotification(TaskNotificationDTO taskNotification) {
         try {
             String jsonPayload = objectMapper.writeValueAsString(taskNotification);
-            
+
             long daysOverdue = 0;
-            if (taskNotification.getAdditionalData() != null && 
-                taskNotification.getAdditionalData().containsKey("daysOverdue")) {
+            if (taskNotification.getAdditionalData() != null
+                    && taskNotification.getAdditionalData().containsKey("daysOverdue")) {
                 daysOverdue = Long.parseLong(taskNotification.getAdditionalData().get("daysOverdue").toString());
             }
-            
+
             String message = "Your task '" + taskNotification.getTaskTitle() + "' is overdue";
             if (daysOverdue > 0) {
                 message += " by " + daysOverdue + (daysOverdue == 1 ? " day" : " days");
             }
-            
-            NotificationEntity notification = NotificationEntity.builder()
-                    .userId(taskNotification.getRecipientId())
-                    .title("Task Overdue")
-                    .message(message)
-                    .type("TASK_OVERDUE")
-                    .referenceId(taskNotification.getTaskId())
-                    .referenceType("TASK")
-                    .read(false)
-                    .payload(jsonPayload)
+
+            NotificationEntity notification = NotificationEntity.builder().userId(taskNotification.getRecipientId())
+                    .title("Task Overdue").message(message).type("TASK_OVERDUE")
+                    .referenceId(taskNotification.getTaskId()).referenceType("TASK").read(false).payload(jsonPayload)
                     .build();
-            
+
             NotificationEntity savedNotification = notificationRepository.save(notification);
-            
+
             // Get user preferences
             NotificationPreferenceEntity preferences = getOrCreateUserPreferences(taskNotification.getRecipientId());
-            
+
             // Overdue notifications bypass quiet hours for urgency
-            
+
             // Send real-time WebSocket notification if enabled
             if (preferences.isWebsocketEnabled() && preferences.isOverdueNotifications()) {
                 webSocketService.sendNotificationToUser(taskNotification.getRecipientId(), savedNotification);
             }
-            
+
             // Send email notification if enabled
             if (preferences.isEmailEnabled() && preferences.isOverdueNotifications()) {
                 try {
@@ -131,7 +121,7 @@ public class NotificationServiceImpl implements NotificationService {
                     log.error("Failed to send email notification for overdue task: {}", e.getMessage(), e);
                 }
             }
-            
+
             return savedNotification;
         } catch (Exception e) {
             log.error("Error creating task overdue notification", e);
@@ -141,31 +131,25 @@ public class NotificationServiceImpl implements NotificationService {
 
     private NotificationPreferenceEntity getOrCreateUserPreferences(String userId) {
         Optional<NotificationPreferenceEntity> existingPrefs = preferenceRepository.findByUserId(userId);
-        
+
         return existingPrefs.orElseGet(() -> {
-            NotificationPreferenceEntity defaultPrefs = NotificationPreferenceEntity.builder()
-                    .userId(userId)
-                    .emailEnabled(true)
-                    .websocketEnabled(true)
-                    .dueSoonNotifications(true)
-                    .overdueNotifications(true)
-                    .taskAssignmentNotifications(true)
-                    .boardSharingNotifications(true)
-                    .build();
-            
+            NotificationPreferenceEntity defaultPrefs = NotificationPreferenceEntity.builder().userId(userId)
+                    .emailEnabled(true).websocketEnabled(true).dueSoonNotifications(true).overdueNotifications(true)
+                    .taskAssignmentNotifications(true).boardSharingNotifications(true).quietHoursEnabled(false).build();
+
             return preferenceRepository.save(defaultPrefs);
         });
     }
-    
+
     private boolean isInQuietHours(NotificationPreferenceEntity preferences) {
         if (preferences.getQuietHoursStart() == null || preferences.getQuietHoursEnd() == null) {
             return false;
         }
-        
+
         LocalTime now = LocalTime.now();
         LocalTime start = LocalTime.of(preferences.getQuietHoursStart(), 0);
         LocalTime end = LocalTime.of(preferences.getQuietHoursEnd(), 0);
-        
+
         if (start.isAfter(end)) {
             // Handles overnight quiet hours (e.g., 22:00 - 07:00)
             return !now.isAfter(end) || !now.isBefore(start);
@@ -194,7 +178,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public NotificationEntity markAsRead(String notificationId) {
         NotificationEntity notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new NotificationNotFoundException("Notification not found"));
 
         notification.setRead(true);
         return notificationRepository.save(notification);
@@ -205,7 +189,9 @@ public class NotificationServiceImpl implements NotificationService {
         List<NotificationEntity> unreadNotifications = notificationRepository
                 .findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
 
-        unreadNotifications.forEach(notification -> notification.setRead(true));
-        notificationRepository.saveAll(unreadNotifications);
+        if (!unreadNotifications.isEmpty()) {
+            unreadNotifications.forEach(notification -> notification.setRead(true));
+            notificationRepository.saveAll(unreadNotifications);
+        }
     }
 }

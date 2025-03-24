@@ -11,6 +11,7 @@ import com.phuonghieuto.backend.notification_service.model.notification.entity.N
 
 @Repository
 public interface NotificationRepository extends JpaRepository<NotificationEntity, String> {
+    List<NotificationEntity> findByUserId(String userId);
     Page<NotificationEntity> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
     List<NotificationEntity> findByUserIdAndReadFalseOrderByCreatedAtDesc(String userId);
     long countByUserIdAndReadFalse(String userId);

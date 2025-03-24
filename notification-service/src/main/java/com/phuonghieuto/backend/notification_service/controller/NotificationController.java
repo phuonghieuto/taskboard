@@ -19,7 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,10 +39,11 @@ public class NotificationController {
             @ApiResponse(responseCode = "200", description = "Notifications retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Page.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content) })
     @GetMapping
-    public ResponseEntity<Page<NotificationEntity>> getUserNotifications(@AuthenticationPrincipal Jwt jwt,
+    public ResponseEntity<Page<NotificationEntity>> getUserNotifications(Authentication authentication,
             @Parameter(description = "Pagination parameters (page, size, sort)", example = "?page=0&size=10&sort=createdAt,desc") @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
 
-        String userId = jwt.getClaimAsString("userId");
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String userId = jwt.getClaim("userId");
         log.info("Getting notifications for user: " + userId);
         Page<NotificationEntity> notifications = notificationService.getUserNotifications(userId, pageable);
         return ResponseEntity.ok(notifications);
@@ -53,10 +54,11 @@ public class NotificationController {
             @ApiResponse(responseCode = "200", description = "Unread notifications retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = List.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content) })
     @GetMapping("/unread")
-    public ResponseEntity<List<NotificationEntity>> getUnreadNotifications(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<List<NotificationEntity>> getUnreadNotifications(Authentication authentication) {
 
         log.info("Getting unread notifications for user");
-        String userId = jwt.getClaimAsString("userId");
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String userId = jwt.getClaim("userId");
         List<NotificationEntity> notifications = notificationService.getUnreadNotifications(userId);
         return ResponseEntity.ok(notifications);
     }
@@ -66,10 +68,11 @@ public class NotificationController {
             @ApiResponse(responseCode = "200", description = "Count retrieved successfully", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Long.class), examples = @ExampleObject(value = "5"))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content) })
     @GetMapping("/unread/count")
-    public ResponseEntity<Long> countUnreadNotifications(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Long> countUnreadNotifications(Authentication authentication) {
 
         log.info("Counting unread notifications for user");
-        String userId = jwt.getClaimAsString("userId");
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String userId = jwt.getClaim("userId");
         long count = notificationService.countUnreadNotifications(userId);
         return ResponseEntity.ok(count);
     }
@@ -82,7 +85,7 @@ public class NotificationController {
     @PutMapping("/{id}/read")
     public ResponseEntity<NotificationEntity> markAsRead(
             @Parameter(description = "Notification ID", example = "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6") @PathVariable String id,
-            @AuthenticationPrincipal Jwt jwt) {
+            Authentication authentication) {
 
         log.info("Marking notification as read: {}", id);
         NotificationEntity notification = notificationService.markAsRead(id);
@@ -94,10 +97,11 @@ public class NotificationController {
             @ApiResponse(responseCode = "200", description = "All notifications marked as read successfully", content = @Content),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content) })
     @PutMapping("/read-all")
-    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
 
         log.info("Marking all notifications as read for user");
-        String userId = jwt.getClaimAsString("userId");
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        String userId = jwt.getClaim("userId");
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok().build();
     }

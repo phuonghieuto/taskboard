@@ -19,20 +19,25 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
 
     @Override
     public NotificationPreferenceEntity getPreferences(String userId) {
-        return preferenceRepository.findByUserId(userId)
-                .orElseGet(() -> createDefaultPreferences(userId));
+        Optional<NotificationPreferenceEntity> existingPrefs = preferenceRepository.findByUserId(userId);
+        if(existingPrefs.isPresent()) {
+            return existingPrefs.get();
+        }
+
+        NotificationPreferenceEntity defaultPrefs = createDefaultPreferences(userId);
+        return preferenceRepository.save(defaultPrefs);
     }
 
     @Override
     public NotificationPreferenceEntity updatePreferences(NotificationPreferenceEntity preferences) {
         // Ensure we're updating the right user's preferences
         NotificationPreferenceEntity existingPrefs = getPreferences(preferences.getUserId());
-        
+
         // If an existing record exists, maintain its ID
         if (existingPrefs.getId() != null) {
             preferences.setId(existingPrefs.getId());
         }
-        
+
         return preferenceRepository.save(preferences);
     }
 
@@ -51,44 +56,45 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
 
     @Override
-    public NotificationPreferenceEntity configureQuietHours(String userId, boolean enabled, Integer start, Integer end) {
+    public NotificationPreferenceEntity configureQuietHours(String userId, boolean enabled, Integer start,
+            Integer end) {
         NotificationPreferenceEntity preferences = getPreferences(userId);
         preferences.setQuietHoursEnabled(enabled);
-        
+
         // Only update start/end if they're provided
         if (start != null) {
             preferences.setQuietHoursStart(start);
         }
-        
+
         if (end != null) {
             preferences.setQuietHoursEnd(end);
         }
-        
+
         return preferenceRepository.save(preferences);
     }
 
     @Override
     public NotificationPreferenceEntity setNotificationTypeEnabled(String userId, String type, boolean enabled) {
         NotificationPreferenceEntity preferences = getPreferences(userId);
-        
+
         // Set the appropriate field based on the notification type
         switch (type.toUpperCase()) {
-            case "DUE_SOON":
-                preferences.setDueSoonNotifications(enabled);
-                break;
-            case "OVERDUE":
-                preferences.setOverdueNotifications(enabled);
-                break;
-            case "TASK_ASSIGNMENT":
-                preferences.setTaskAssignmentNotifications(enabled);
-                break;
-            case "BOARD_SHARING":
-                preferences.setTaskAssignmentNotifications(enabled);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown notification type: " + type);
+        case "DUE_SOON":
+            preferences.setDueSoonNotifications(enabled);
+            break;
+        case "OVERDUE":
+            preferences.setOverdueNotifications(enabled);
+            break;
+        case "TASK_ASSIGNMENT":
+            preferences.setTaskAssignmentNotifications(enabled);
+            break;
+        case "BOARD_SHARING":
+            preferences.setTaskAssignmentNotifications(enabled);
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown notification type: " + type);
         }
-        
+
         return preferenceRepository.save(preferences);
     }
 
@@ -96,26 +102,18 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     public NotificationPreferenceEntity resetToDefaults(String userId) {
         // Get existing preferences if any
         Optional<NotificationPreferenceEntity> existingPrefs = preferenceRepository.findByUserId(userId);
-        
-        // Create default preferences, but maintain ID if it exists
+
         NotificationPreferenceEntity defaultPrefs = createDefaultPreferences(userId);
         existingPrefs.ifPresent(prefs -> defaultPrefs.setId(prefs.getId()));
-        
+
         return preferenceRepository.save(defaultPrefs);
     }
-    
+
     private NotificationPreferenceEntity createDefaultPreferences(String userId) {
-        NotificationPreferenceEntity defaultPrefs = NotificationPreferenceEntity.builder()
-                .userId(userId)
-                .emailEnabled(true)
-                .websocketEnabled(true)
-                .dueSoonNotifications(true)
-                .overdueNotifications(true)
-                .taskAssignmentNotifications(true)
-                .boardSharingNotifications(true)
-                .quietHoursEnabled(false)
-                .build();
-        
+        NotificationPreferenceEntity defaultPrefs = NotificationPreferenceEntity.builder().userId(userId).emailEnabled(true).websocketEnabled(true)
+                .dueSoonNotifications(true).overdueNotifications(true).taskAssignmentNotifications(true)
+                .boardSharingNotifications(true).quietHoursEnabled(false).build();
+
         return defaultPrefs;
     }
 }
