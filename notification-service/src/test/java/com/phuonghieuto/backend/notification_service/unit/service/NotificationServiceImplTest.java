@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -136,23 +137,27 @@ class NotificationServiceImplTest {
         verify(emailService).sendTaskDueSoonEmail(any(TaskNotificationDTO.class), eq(TEST_EMAIL));
     }
 
-    @Test
+        @Test
     void createTaskDueSoonNotification_WithQuietHours_NoNotifications() throws Exception {
         // Arrange
         preferenceEntity.setQuietHoursEnabled(true);
-        preferenceEntity.setQuietHoursStart(18); // Start 1 hour ago
-        preferenceEntity.setQuietHoursEnd(6); // End 1 hour from now
-
+        preferenceEntity.setQuietHoursStart(18); // 6 PM
+        preferenceEntity.setQuietHoursEnd(6);    // 6 AM
+        
         when(notificationRepository.save(any(NotificationEntity.class))).thenReturn(notificationEntity);
         when(preferenceRepository.findByUserId(TEST_USER_ID)).thenReturn(Optional.of(preferenceEntity));
-
-        // Act
-        NotificationEntity result = notificationService.createTaskDueSoonNotification(taskNotification);
-
+        
+        // Create spy and configure it 
+        NotificationServiceImpl notificationServiceSpy = Mockito.spy(notificationService);
+        Mockito.doReturn(LocalTime.of(23, 0)).when(notificationServiceSpy).getCurrentTime();
+        
+        // Act - Use the spy instead of the original service
+        NotificationEntity result = notificationServiceSpy.createTaskDueSoonNotification(taskNotification);
+        
         // Assert
         assertNotNull(result);
         assertEquals(TEST_NOTIFICATION_ID, result.getId());
-
+        
         // Verify interactions - should still save notification but not send it
         verify(notificationRepository).save(any(NotificationEntity.class));
         verify(preferenceRepository).findByUserId(TEST_USER_ID);
