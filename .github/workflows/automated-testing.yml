@@ -43,7 +43,14 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: maven
+    
+    - name: Maven Dependency Cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
     
     - name: Run Tests
       run: mvn -B test
@@ -52,9 +59,48 @@ jobs:
       if: always()
       run: mvn surefire-report:report-only
       
-    - name: Upload Test Report
+    - name: Create Reports Directory
+      if: always()
+      run: mkdir -p .github/test-reports/html .github/test-reports/xml
+      
+    - name: Collect HTML Reports
+      if: always()
+      run: |
+        echo "Collecting HTML reports..."
+        find . -name "surefire-report.html" -type f | while read file; do
+          # Extract service name from path (e.g., auth-service from auth-service/target/...)
+          service=$(echo $file | awk -F'/' '{print $2}')
+          # Create directory if it doesn't exist
+          mkdir -p .github/test-reports/html/$service
+          # Copy the file
+          cp $file .github/test-reports/html/$service/
+        done
+        
+    - name: Collect XML Reports
+      if: always()
+      run: |
+        echo "Collecting XML reports..."
+        find . -path "*/target/surefire-reports/*.xml" -type f | while read file; do
+          # Extract service name from path
+          service=$(echo $file | awk -F'/' '{print $2}')
+          # Create directory if it doesn't exist
+          mkdir -p .github/test-reports/xml/$service
+          # Copy the file
+          cp $file .github/test-reports/xml/$service/
+        done
+        
+    - name: List Collected Reports
+      if: always()
+      run: |
+        echo "HTML Reports:"
+        find .github/test-reports/html -type f | sort
+        echo "XML Reports:"
+        find .github/test-reports/xml -type f | sort
+    
+    - name: Upload Test Reports
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-report
-        path: '*/target/site/surefire-report.html'
+        name: test-reports
+        path: .github/test-reports
+        if-no-files-found: warn
