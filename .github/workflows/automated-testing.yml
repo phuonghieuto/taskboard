@@ -318,7 +318,7 @@ jobs:
             notification-service/target/surefire-reports
           if-no-files-found: warn
 
-  aggregate-reports:
+    aggregate-reports:
     needs: [test-discovery-server, test-api-gateway, test-auth-service, test-task-service, test-notification-service]
     runs-on: ubuntu-latest
     if: always()
@@ -327,54 +327,118 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Create Reports Directory
-        run: mkdir -p .github/test-reports/html .github/test-reports/xml
+        run: mkdir -p .github/test-reports/summary .github/test-reports/xml
       
       - name: Download Discovery Server Reports
         uses: actions/download-artifact@v4
         with:
           name: discovery-server-test-reports
           path: discovery-server-reports
+        continue-on-error: true
       
       - name: Download API Gateway Reports
         uses: actions/download-artifact@v4
         with:
           name: api-gateway-test-reports
           path: api-gateway-reports
+        continue-on-error: true
       
       - name: Download Auth Service Reports
         uses: actions/download-artifact@v4
         with:
           name: auth-service-test-reports
           path: auth-service-reports
+        continue-on-error: true
       
       - name: Download Task Service Reports
         uses: actions/download-artifact@v4
         with:
           name: task-service-test-reports
           path: task-service-reports
+        continue-on-error: true
       
       - name: Download Notification Service Reports
         uses: actions/download-artifact@v4
         with:
           name: notification-service-test-reports
           path: notification-service-reports
+        continue-on-error: true
       
-      - name: Organize Reports
+      - name: Generate Text Summaries
         run: |
-          # HTML reports
-          mkdir -p .github/test-reports/html/discovery-server
-          mkdir -p .github/test-reports/html/api-gateway
-          mkdir -p .github/test-reports/html/auth-service
-          mkdir -p .github/test-reports/html/task-service
-          mkdir -p .github/test-reports/html/notification-service
+          # Create directory for summary reports
+          mkdir -p .github/test-reports/summary
           
-          # Copy HTML reports
-          cp -r discovery-server-reports/site/* .github/test-reports/html/discovery-server/ || true
-          cp -r api-gateway-reports/site/* .github/test-reports/html/api-gateway/ || true
-          cp -r auth-service-reports/site/* .github/test-reports/html/auth-service/ || true
-          cp -r task-service-reports/site/* .github/test-reports/html/task-service/ || true
-          cp -r notification-service-reports/site/* .github/test-reports/html/notification-service/ || true
+          # Function to extract test summary from XML
+          extract_summary() {
+            local service=$1
+            local report_dir=$2
+            local output_file=".github/test-reports/summary/${service}.txt"
+            
+            echo "Test Summary for ${service}" > "${output_file}"
+            echo "=============================" >> "${output_file}"
+            echo "" >> "${output_file}"
+            
+            if [ -d "${report_dir}/surefire-reports" ]; then
+              # Get total tests, failures, errors
+              local total_tests=0
+              local total_failures=0
+              local total_errors=0
+              local total_skipped=0
+              
+              for xml_file in ${report_dir}/surefire-reports/*.xml; do
+                if [ -f "$xml_file" ]; then
+                  # Get test counts
+                  local tests=$(grep -o 'tests="[0-9]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                  local failures=$(grep -o 'failures="[0-9]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                  local errors=$(grep -o 'errors="[0-9]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                  local skipped=$(grep -o 'skipped="[0-9]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                  
+                  # Add to totals
+                  total_tests=$((total_tests + tests))
+                  total_failures=$((total_failures + failures))
+                  total_errors=$((total_errors + errors))
+                  total_skipped=$((total_skipped + skipped))
+                  
+                  # Extract class name
+                  local classname=$(grep -o 'classname="[^"]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                  echo "Class: $classname" >> "${output_file}"
+                  echo "  Tests: $tests, Failures: $failures, Errors: $errors, Skipped: $skipped" >> "${output_file}"
+                  
+                  # Extract failure details if any
+                  if [ "$failures" -gt 0 ] || [ "$errors" -gt 0 ]; then
+                    echo "  Failures/Errors:" >> "${output_file}"
+                    grep -A 3 "<failure" "$xml_file" | sed 's/<.*>//g' | grep -v "^--$" | sed 's/^/    /' >> "${output_file}"
+                    grep -A 3 "<error" "$xml_file" | sed 's/<.*>//g' | grep -v "^--$" | sed 's/^/    /' >> "${output_file}"
+                  fi
+                  echo "" >> "${output_file}"
+                fi
+              done
+              
+              # Add summary
+              echo "Summary:" >> "${output_file}"
+              echo "  Total Tests: $total_tests" >> "${output_file}"
+              echo "  Failures: $total_failures" >> "${output_file}"
+              echo "  Errors: $total_errors" >> "${output_file}"
+              echo "  Skipped: $total_skipped" >> "${output_file}"
+              echo "  Pass Rate: $((100 * (total_tests - total_failures - total_errors) / total_tests))%" >> "${output_file}"
+            else
+              echo "No test reports found for ${service}" >> "${output_file}"
+            fi
+          }
           
+          # Generate summaries for each service
+          extract_summary "discovery-server" "discovery-server-reports"
+          extract_summary "api-gateway" "api-gateway-reports"
+          extract_summary "auth-service" "auth-service-reports"
+          extract_summary "task-service" "task-service-reports"
+          extract_summary "notification-service" "notification-service-reports"
+          
+          # Create combined summary
+          cat .github/test-reports/summary/*.txt > .github/test-reports/summary.txt
+      
+      - name: Store XML Reports
+        run: |
           # XML reports
           mkdir -p .github/test-reports/xml/discovery-server
           mkdir -p .github/test-reports/xml/api-gateway
@@ -382,7 +446,7 @@ jobs:
           mkdir -p .github/test-reports/xml/task-service
           mkdir -p .github/test-reports/xml/notification-service
           
-          # Copy XML reports
+          # Copy XML reports for reference
           cp -r discovery-server-reports/surefire-reports/* .github/test-reports/xml/discovery-server/ || true
           cp -r api-gateway-reports/surefire-reports/* .github/test-reports/xml/api-gateway/ || true
           cp -r auth-service-reports/surefire-reports/* .github/test-reports/xml/auth-service/ || true
@@ -391,10 +455,63 @@ jobs:
       
       - name: List Collected Reports
         run: |
-          echo "HTML Reports:"
-          find .github/test-reports/html -type f | sort
-          echo "XML Reports:"
+          echo "Summary Reports:"
+          find .github/test-reports/summary -type f | sort
+          echo "Contents of summary.txt:"
+          cat .github/test-reports/summary.txt
+          echo "XML Reports (for reference):"
           find .github/test-reports/xml -type f | sort
+      
+      - name: Create GitHub Workflow Summary
+        run: |
+          echo "# Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Tests | Failures | Errors | Skipped | Pass Rate |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------|----------|--------|---------|-----------|" >> $GITHUB_STEP_SUMMARY
+          
+          # Function to extract summary data for workflow summary
+          extract_workflow_summary() {
+            local service=$1
+            local report_dir=$2
+            
+            local total_tests=0
+            local total_failures=0
+            local total_errors=0
+            local total_skipped=0
+            local pass_rate="N/A"
+            
+            # Try to find the summary data
+            for xml_file in ${report_dir}/surefire-reports/*.xml; do
+              if [ -f "$xml_file" ]; then
+                # Get test counts
+                local tests=$(grep -o 'tests="[0-9]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                local failures=$(grep -o 'failures="[0-9]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                local errors=$(grep -o 'errors="[0-9]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                local skipped=$(grep -o 'skipped="[0-9]*"' "$xml_file" | head -1 | cut -d'"' -f2)
+                
+                # Add to totals
+                total_tests=$((total_tests + tests))
+                total_failures=$((total_failures + failures))
+                total_errors=$((total_errors + errors))
+                total_skipped=$((total_skipped + skipped))
+              fi
+            done
+            
+            # Calculate pass rate if there were tests
+            if [ "$total_tests" -gt 0 ]; then
+              pass_rate="$((100 * (total_tests - total_failures - total_errors) / total_tests))%"
+            fi
+            
+            # Add row to summary table
+            echo "| $service | $total_tests | $total_failures | $total_errors | $total_skipped | $pass_rate |" >> $GITHUB_STEP_SUMMARY
+          }
+          
+          # Add each service to the workflow summary
+          extract_workflow_summary "Discovery Server" "discovery-server-reports"
+          extract_workflow_summary "API Gateway" "api-gateway-reports"
+          extract_workflow_summary "Auth Service" "auth-service-reports"
+          extract_workflow_summary "Task Service" "task-service-reports"
+          extract_workflow_summary "Notification Service" "notification-service-reports"
       
       - name: Upload Consolidated Test Reports
         uses: actions/upload-artifact@v4
