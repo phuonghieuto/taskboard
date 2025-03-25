@@ -6,9 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push:
+  setup:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -19,54 +18,175 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Build with Maven
-        run: mvn -B clean package -DskipTests
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Prepare version variables
+        run: |
+          echo "VERSION_SHORT=$(echo ${{ github.sha }} | cut -c1-8)" >> $GITHUB_ENV
+      
+      # Install parent POM for later jobs
+      - name: Install parent POM
+        run: mvn -B install -DskipTests
+    
+    outputs:
+      version_short: ${{ env.VERSION_SHORT }}
 
-      - name: Run Tests
-        run: mvn test
+  # Individual service jobs
+  build-discovery-server:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and Test Discovery Server
+        run: cd discovery-server && mvn -B clean package
 
-      - name: Prepare version variables
+      - name: Build and Push Discovery Server Image
         run: |
-          echo "VERSION_SHORT=$(echo ${{ github.sha }} | cut -c1-8)" >> $GITHUB_ENV
-
-      - name: Build and Push Docker Images
-        run: |
-          # Discovery Server
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/discovery-server:${{ env.VERSION_SHORT }} -t ${{ secrets.DOCKER_USERNAME }}/discovery-server:prod ./discovery-server
-          docker push ${{ secrets.DOCKER_USERNAME }}/discovery-server:${{ env.VERSION_SHORT }}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/discovery-server:${{ needs.setup.outputs.version_short }} -t ${{ secrets.DOCKER_USERNAME }}/discovery-server:prod ./discovery-server
+          docker push ${{ secrets.DOCKER_USERNAME }}/discovery-server:${{ needs.setup.outputs.version_short }}
           docker push ${{ secrets.DOCKER_USERNAME }}/discovery-server:prod
 
-          # API Gateway
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:${{ env.VERSION_SHORT }} -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:prod ./api-gateway
-          docker push ${{ secrets.DOCKER_USERNAME }}/api-gateway:${{ env.VERSION_SHORT }}
+  build-api-gateway:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and Test API Gateway
+        run: cd api-gateway && mvn -B clean package
+
+      - name: Build and Push API Gateway Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:${{ needs.setup.outputs.version_short }} -t ${{ secrets.DOCKER_USERNAME }}/api-gateway:prod ./api-gateway
+          docker push ${{ secrets.DOCKER_USERNAME }}/api-gateway:${{ needs.setup.outputs.version_short }}
           docker push ${{ secrets.DOCKER_USERNAME }}/api-gateway:prod
 
-          # Auth Service
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/auth-service:${{ env.VERSION_SHORT }} -t ${{ secrets.DOCKER_USERNAME }}/auth-service:prod ./auth-service
-          docker push ${{ secrets.DOCKER_USERNAME }}/auth-service:${{ env.VERSION_SHORT }}
+  build-auth-service:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and Test Auth Service
+        run: cd auth-service && mvn -B clean package
+
+      - name: Build and Push Auth Service Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/auth-service:${{ needs.setup.outputs.version_short }} -t ${{ secrets.DOCKER_USERNAME }}/auth-service:prod ./auth-service
+          docker push ${{ secrets.DOCKER_USERNAME }}/auth-service:${{ needs.setup.outputs.version_short }}
           docker push ${{ secrets.DOCKER_USERNAME }}/auth-service:prod
 
-          # Task Service
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/task-service:${{ env.VERSION_SHORT }} -t ${{ secrets.DOCKER_USERNAME }}/task-service:prod ./task-service
-          docker push ${{ secrets.DOCKER_USERNAME }}/task-service:${{ env.VERSION_SHORT }}
+  build-task-service:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and Test Task Service
+        run: cd task-service && mvn -B clean package
+
+      - name: Build and Push Task Service Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/task-service:${{ needs.setup.outputs.version_short }} -t ${{ secrets.DOCKER_USERNAME }}/task-service:prod ./task-service
+          docker push ${{ secrets.DOCKER_USERNAME }}/task-service:${{ needs.setup.outputs.version_short }}
           docker push ${{ secrets.DOCKER_USERNAME }}/task-service:prod
 
-          # Notification Service
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/notification-service:${{ env.VERSION_SHORT }} -t ${{ secrets.DOCKER_USERNAME }}/notification-service:prod ./notification-service
-          docker push ${{ secrets.DOCKER_USERNAME }}/notification-service:${{ env.VERSION_SHORT }}
+  build-notification-service:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and Test Notification Service
+        run: cd notification-service && mvn -B clean package
+
+      - name: Build and Push Notification Service Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/notification-service:${{ needs.setup.outputs.version_short }} -t ${{ secrets.DOCKER_USERNAME }}/notification-service:prod ./notification-service
+          docker push ${{ secrets.DOCKER_USERNAME }}/notification-service:${{ needs.setup.outputs.version_short }}
           docker push ${{ secrets.DOCKER_USERNAME }}/notification-service:prod
 
+  create-release:
+    needs: [setup, build-discovery-server, build-api-gateway, build-auth-service, build-task-service, build-notification-service]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Production Release ${{ env.VERSION_SHORT }}
-          tag_name: v${{ env.VERSION_SHORT }}
+          name: Production Release ${{ needs.setup.outputs.version_short }}
+          tag_name: v${{ needs.setup.outputs.version_short }}
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
