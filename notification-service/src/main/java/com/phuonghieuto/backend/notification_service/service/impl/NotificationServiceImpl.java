@@ -141,21 +141,26 @@ public class NotificationServiceImpl implements NotificationService {
         });
     }
 
+    // Add this as a protected method for easier testing
+    public LocalTime getCurrentTime() {
+        return LocalTime.now();
+    }
+
     private boolean isInQuietHours(NotificationPreferenceEntity preferences) {
         if (preferences.getQuietHoursStart() == null || preferences.getQuietHoursEnd() == null) {
             return false;
         }
 
-        LocalTime now = LocalTime.now();
+        LocalTime now = getCurrentTime();
         LocalTime start = LocalTime.of(preferences.getQuietHoursStart(), 0);
         LocalTime end = LocalTime.of(preferences.getQuietHoursEnd(), 0);
 
         if (start.isAfter(end)) {
             // Handles overnight quiet hours (e.g., 22:00 - 07:00)
-            return !now.isAfter(end) || !now.isBefore(start);
+            return now.isAfter(start) || now.isBefore(end);
         } else {
             // Regular quiet hours (e.g., 00:00 - 07:00)
-            return !now.isBefore(start) && !now.isAfter(end);
+            return now.isAfter(start) && now.isBefore(end);
         }
     }
 

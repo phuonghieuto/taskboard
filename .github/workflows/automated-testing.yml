@@ -2,12 +2,12 @@ name: Test
 
 on:
   push:
-    branches: [ main, develop, 'feature/**' ]
+    branches: [ develop, 'feature/**' ]
   pull_request:
     branches: [ main, develop ]
 
 jobs:
-  test:
+  setup-services:
     runs-on: ubuntu-latest
     
     services:
@@ -36,71 +36,284 @@ jobs:
           --health-retries 5
     
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-    
-    - name: Maven Dependency Cache
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
-    
-    - name: Run Tests
-      run: mvn -B test
+      - uses: actions/checkout@v4
       
-    - name: Generate Test Report
-      if: always()
-      run: mvn surefire-report:report-only
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
       
-    - name: Create Reports Directory
-      if: always()
-      run: mkdir -p .github/test-reports/html .github/test-reports/xml
+      - name: Maven Dependency Cache
+        id: maven-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       
-    - name: Collect HTML Reports
-      if: always()
-      run: |
-        echo "Collecting HTML reports..."
-        find . -name "surefire-report.html" -type f | while read file; do
-          # Extract service name from path (e.g., auth-service from auth-service/target/...)
-          service=$(echo $file | awk -F'/' '{print $2}')
-          # Create directory if it doesn't exist
-          mkdir -p .github/test-reports/html/$service
-          # Copy the file
-          cp $file .github/test-reports/html/$service/
-        done
-        
-    - name: Collect XML Reports
-      if: always()
-      run: |
-        echo "Collecting XML reports..."
-        find . -path "*/target/surefire-reports/*.xml" -type f | while read file; do
-          # Extract service name from path
-          service=$(echo $file | awk -F'/' '{print $2}')
-          # Create directory if it doesn't exist
-          mkdir -p .github/test-reports/xml/$service
-          # Copy the file
-          cp $file .github/test-reports/xml/$service/
-        done
-        
-    - name: List Collected Reports
-      if: always()
-      run: |
-        echo "HTML Reports:"
-        find .github/test-reports/html -type f | sort
-        echo "XML Reports:"
-        find .github/test-reports/xml -type f | sort
+      - name: Install parent POM
+        run: mvn -B install -DskipTests
     
-    - name: Upload Test Reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-reports
-        path: .github/test-reports
-        if-no-files-found: warn
+    outputs:
+      maven-cache-hit: ${{ steps.maven-cache.outputs.cache-hit }}
+
+  test-discovery-server:
+    needs: setup-services
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Maven Dependency Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      
+      - name: Test Discovery Server
+        run: cd discovery-server && mvn -B test
+      
+      - name: Generate Test Report
+        if: always()
+        run: cd discovery-server && mvn surefire-report:report-only
+      
+      - name: Upload Discovery Server Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovery-server-test-reports
+          path: |
+            discovery-server/target/site/surefire-report.html
+            discovery-server/target/surefire-reports
+          if-no-files-found: warn
+
+  test-api-gateway:
+    needs: setup-services
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Maven Dependency Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      
+      - name: Test API Gateway
+        run: cd api-gateway && mvn -B test
+      
+      - name: Generate Test Report
+        if: always()
+        run: cd api-gateway && mvn surefire-report:report-only
+      
+      - name: Upload API Gateway Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-gateway-test-reports
+          path: |
+            api-gateway/target/site/surefire-report.html
+            api-gateway/target/surefire-reports
+          if-no-files-found: warn
+
+  test-auth-service:
+    needs: setup-services
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: auth_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Maven Dependency Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      
+      - name: Test Auth Service
+        run: cd auth-service && mvn -B test
+      
+      - name: Generate Test Report
+        if: always()
+        run: cd auth-service && mvn surefire-report:report-only
+      
+      - name: Upload Auth Service Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auth-service-test-reports
+          path: |
+            auth-service/target/site/surefire-report.html
+            auth-service/target/surefire-reports
+          if-no-files-found: warn
+
+  test-task-service:
+    needs: setup-services
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: task_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Maven Dependency Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      
+      - name: Test Task Service
+        run: cd task-service && mvn -B test
+      
+      - name: Generate Test Report
+        if: always()
+        run: cd task-service && mvn surefire-report:report-only
+      
+      - name: Upload Task Service Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: task-service-test-reports
+          path: |
+            task-service/target/site/surefire-report.html
+            task-service/target/surefire-reports
+          if-no-files-found: warn
+
+  test-notification-service:
+    needs: setup-services
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: notification_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmqctl status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Maven Dependency Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      
+      - name: Test Notification Service
+        run: cd notification-service && mvn -B test
+      
+      - name: Generate Test Report
+        if: always()
+        run: cd notification-service && mvn surefire-report:report-only
+      
+      - name: Upload Notification Service Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: notification-service-test-reports
+          path: |
+            notification-service/target/site/surefire-report.html
+            notification-service/target/surefire-reports
+          if-no-files-found: warn
