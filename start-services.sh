@@ -12,7 +12,7 @@ exec 2>&1
 
 # Stop all containers and remove volumes
 echo "Stopping all containers..."
-docker-compose -f docker-compose.yaml down
+docker-compose -f docker-compose.dev.yaml down
 
 # # Remove the postgres volume explicitly
 # echo "Removing PostgreSQL volume..."
@@ -24,11 +24,11 @@ docker-compose -f docker-compose.yaml down
 
 # Build the services
 echo "Building services..."
-docker-compose -f docker-compose.yaml build
+docker-compose -f docker-compose.dev.yaml build
 
 # Start the services in detached mode
 echo "Starting services..."
-docker-compose -f docker-compose.yaml up -d
+docker-compose -f docker-compose.dev.yaml up -d
 
 # Check the exit status of the last command
 if [ $? -ne 0 ]; then

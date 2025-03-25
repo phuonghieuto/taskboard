@@ -1,0 +1,72 @@
+name: CD Pipeline (Production)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn -B clean package -DskipTests
+
+      - name: Run Tests
+        run: mvn test
+
+      - name: Build and Tag Docker Images
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          VERSION: ${{ github.sha }}
+        run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+          # Build and push discovery-server
+          VERSION_SHORT=${VERSION::8}
+          docker build -t $DOCKER_USERNAME/discovery-server:$VERSION_SHORT -t $DOCKER_USERNAME/discovery-server:prod ./discovery-serverdiscovery-server:prod ./discovery-server
+          docker push $DOCKER_USERNAME/discovery-server:$VERSION
+          docker push $DOCKER_USERNAME/discovery-server:prod
+
+          # Build and push api-gateway
+          docker build -t $DOCKER_USERNAME/api-gateway:$VERSION -t $DOCKER_USERNAME/api-gateway:prod ./api-gateway
+          docker push $DOCKER_USERNAME/api-gateway:$VERSION
+          docker push $DOCKER_USERNAME/api-gateway:prod
+
+          # Build and push auth-service
+          docker build -t $DOCKER_USERNAME/auth-service:$VERSION -t $DOCKER_USERNAME/auth-service:prod ./auth-service
+          docker push $DOCKER_USERNAME/auth-service:$VERSION
+          docker push $DOCKER_USERNAME/auth-service:prod
+
+          # Build and push task-service
+          docker build -t $DOCKER_USERNAME/task-service:$VERSION -t $DOCKER_USERNAME/task-service:prod ./task-service
+          docker push $DOCKER_USERNAME/task-service:$VERSION
+          docker push $DOCKER_USERNAME/task-service:prod
+
+          # Build and push notification-service
+          docker build -t $DOCKER_USERNAME/notification-service:$VERSION -t $DOCKER_USERNAME/notification-service:prod ./notification-service
+          docker push $DOCKER_USERNAME/notification-service:$VERSION
+          docker push $DOCKER_USERNAME/notification-service:prod
+
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USERNAME }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          script: |
+            cd ~/taskmanagement
+            docker-compose -f docker-compose.yml down
+            docker-compose -f docker-compose.yml pull
+            docker-compose -f docker-compose.yml up -d
