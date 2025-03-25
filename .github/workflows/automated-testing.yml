@@ -1,0 +1,106 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop, 'feature/**' ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_MULTIPLE_DATABASES: auth_test,task_test,notification_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmqctl status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Maven Dependency Cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    
+    - name: Run Tests
+      run: mvn -B test
+      
+    - name: Generate Test Report
+      if: always()
+      run: mvn surefire-report:report-only
+      
+    - name: Create Reports Directory
+      if: always()
+      run: mkdir -p .github/test-reports/html .github/test-reports/xml
+      
+    - name: Collect HTML Reports
+      if: always()
+      run: |
+        echo "Collecting HTML reports..."
+        find . -name "surefire-report.html" -type f | while read file; do
+          # Extract service name from path (e.g., auth-service from auth-service/target/...)
+          service=$(echo $file | awk -F'/' '{print $2}')
+          # Create directory if it doesn't exist
+          mkdir -p .github/test-reports/html/$service
+          # Copy the file
+          cp $file .github/test-reports/html/$service/
+        done
+        
+    - name: Collect XML Reports
+      if: always()
+      run: |
+        echo "Collecting XML reports..."
+        find . -path "*/target/surefire-reports/*.xml" -type f | while read file; do
+          # Extract service name from path
+          service=$(echo $file | awk -F'/' '{print $2}')
+          # Create directory if it doesn't exist
+          mkdir -p .github/test-reports/xml/$service
+          # Copy the file
+          cp $file .github/test-reports/xml/$service/
+        done
+        
+    - name: List Collected Reports
+      if: always()
+      run: |
+        echo "HTML Reports:"
+        find .github/test-reports/html -type f | sort
+        echo "XML Reports:"
+        find .github/test-reports/xml -type f | sort
+    
+    - name: Upload Test Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports
+        path: .github/test-reports
+        if-no-files-found: warn

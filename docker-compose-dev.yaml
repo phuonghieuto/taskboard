@@ -1,62 +1,98 @@
-version: '3.8'
+version: "3.8"
 
 services:
+  db:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_MULTIPLE_DATABASES=${POSTGRES_MULTIPLE_DATABASES}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init-multi-postgres-databases.sh:/docker-entrypoint-initdb.d/init-multi-postgres-databases.sh
+      - ./database/sql:/docker-entrypoint-initdb.d/sql
+    networks:
+      - microservices-network
+
+  # redis:
+  #   image: redis:latest
+  #   container_name: redis
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - microservices-network
+
   discovery:
-    image: ${DOCKER_USERNAME}/discovery-server:prod
+    build:
+      context: ./discovery-server
+      dockerfile: Dockerfile
     ports:
       - "8761:8761"
     networks:
       - microservices-network
     env_file:
       - .env
-    restart: unless-stopped
     container_name: discovery-server
 
   gateway:
-    image: ${DOCKER_USERNAME}/api-gateway:prod
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     depends_on:
       - discovery
+      # - redis
     networks:
       - microservices-network
     env_file:
       - .env
-    restart: unless-stopped
     container_name: api-gateway
 
   auth-service:
-    image: ${DOCKER_USERNAME}/auth-service:prod
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
     ports:
       - "8081:8081"
     depends_on:
       - discovery
+      # - redis
     networks:
       - microservices-network
     env_file:
       - .env
-    restart: unless-stopped
     container_name: auth-service
     volumes:
       - ./keys:/app/keys
 
   task-service:
-    image: ${DOCKER_USERNAME}/task-service:prod
+    build:
+      context: ./task-service
+      dockerfile: Dockerfile
     ports:
       - "8082:8082"
     depends_on:
       - discovery
+      # - redis
     networks:
       - microservices-network
     env_file:
       - .env
-    restart: unless-stopped
     container_name: task-service
     volumes:
       - ./keys:/app/keys
 
   notification-service:
-    image: ${DOCKER_USERNAME}/notification-service:prod
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
     ports:
       - "8083:8083"
     depends_on:
@@ -66,7 +102,6 @@ services:
       - microservices-network
     env_file:
       - .env
-    restart: unless-stopped
     container_name: notification-service
     volumes:
       - ./keys:/app/keys
@@ -84,38 +119,18 @@ services:
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_MULTIPLE_DATABASES=auth,task,notification
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init-multi-postgres-databases.sh:/docker-entrypoint-initdb.d/init-multi-postgres-databases.sh
-    networks:
-      - microservices-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-volumes:
-  postgres_data:
-  rabbitmq_data:
-
 networks:
   microservices-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+    name: postgres_data
+  rabbitmq_data:
+    name: rabbitmq_data
