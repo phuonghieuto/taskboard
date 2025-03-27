@@ -127,7 +127,8 @@ services:
 
 networks:
   microservices-network:
-    driver: bridge
+    external: false
+    name: microservices-network
 
 volumes:
   postgres_data:

@@ -1,6 +1,17 @@
 spring:
   application:
      name : discovery-server
+  zipkin:
+    baseUrl: http://zipkin:9411
+    sender:
+      type: web
+  sleuth:
+    sampler:
+      probability: 1.0
+    integration:
+      enabled: true
+    scheduled:
+      enabled: true
 server:
   port: 8761
 eureka:
@@ -11,3 +22,30 @@ eureka:
     fetchRegistry: false
   server:
     waitTimeInMsWhenSyncEmpty: 0
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers,env,mappings
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+  prometheus:
+    metrics:
+      export:
+        enabled: true

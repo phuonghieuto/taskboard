@@ -50,6 +50,17 @@ spring:
             scope:
               - user:email
               - read:user
+  zipkin:
+    baseUrl: http://zipkin:9411
+    sender:
+      type: web
+  sleuth:
+    sampler:
+      probability: 1.0
+    integration:
+      enabled: true
+    scheduled:
+      enabled: true
 logging:
   file:
     name: src/main/resources/script/stage_log.log
@@ -102,3 +113,30 @@ auth:
   keys:
     public-key-path: ${AUTH_PUBLIC_KEY_PATH}
     private-key-path: ${AUTH_PRIVATE_KEY_PATH}
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers,env,mappings
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+  prometheus:
+    metrics:
+      export:
+        enabled: true
