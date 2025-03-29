@@ -16,9 +16,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.phuonghieuto.backend.api_gateway.client.AuthServiceClient;
 import com.phuonghieuto.backend.api_gateway.model.Token;
 import com.phuonghieuto.backend.api_gateway.model.common.CustomError;
+import com.phuonghieuto.backend.api_gateway.service.TokenValidationService;
 
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
@@ -31,11 +31,11 @@ import reactor.core.scheduler.Schedulers;
 public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAuthenticationFilter.Config> {
 
     private final ObjectMapper objectMapper;
-    private final AuthServiceClient authServiceClient;
+    private final TokenValidationService tokenValidationService;
 
-    public JwtAuthenticationFilter(@Lazy AuthServiceClient authServiceClient) {
+    public JwtAuthenticationFilter(@Lazy TokenValidationService tokenValidationService) {
         super(Config.class);
-        this.authServiceClient = authServiceClient;
+        this.tokenValidationService = tokenValidationService;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
     }
@@ -70,9 +70,9 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             if (Token.isBearerToken(authorizationHeader)) {
                 String jwt = Token.getJwt(authorizationHeader);
 
-                // Validate token using auth-service
+                // Use cached token validation
                 return Mono.fromCallable(() -> {
-                            authServiceClient.validateToken(jwt);
+                            tokenValidationService.validateToken(jwt);
                             log.debug("Token validation succeeded for path: {}", path);
                             return true;
                         })

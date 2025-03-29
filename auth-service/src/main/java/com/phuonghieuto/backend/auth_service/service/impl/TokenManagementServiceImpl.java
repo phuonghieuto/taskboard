@@ -5,6 +5,9 @@ import com.phuonghieuto.backend.auth_service.repository.InvalidTokenRepository;
 import com.phuonghieuto.backend.auth_service.service.TokenManagementService;
 import com.phuonghieuto.backend.auth_service.exception.TokenAlreadyInvalidatedException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Set;
@@ -17,6 +20,7 @@ public class TokenManagementServiceImpl implements TokenManagementService {
     private final InvalidTokenRepository invalidTokenRepository;
 
     @Override
+    @CacheEvict(value = "invalidTokens", allEntries = true)
     public void invalidateTokens(Set<String> tokenIds) {
         final Set<InvalidTokenEntity> invalidTokenEntities = tokenIds.stream()
                 .map(tokenId -> InvalidTokenEntity.builder()
@@ -28,6 +32,7 @@ public class TokenManagementServiceImpl implements TokenManagementService {
     }
 
     @Override
+    @Cacheable(value = "invalidTokens", key = "#tokenId")
     public boolean checkForInvalidityOfToken(String tokenId) {
         log.info("Checking for invalidity of token with ID: {}", tokenId);
         final boolean isTokenInvalid = invalidTokenRepository.findByTokenId(tokenId).isPresent();

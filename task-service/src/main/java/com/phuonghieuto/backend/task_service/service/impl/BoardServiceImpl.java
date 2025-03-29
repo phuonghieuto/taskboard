@@ -13,6 +13,9 @@ import com.phuonghieuto.backend.task_service.util.AuthUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +35,7 @@ public class BoardServiceImpl implements BoardService {
     private final AuthUtils authUtils;
 
     @Override
+    @CacheEvict(value = "userBoards", key = "#result.ownerId")
     public BoardResponseDTO createBoard(BoardRequestDTO boardRequest) {
         String currentUserId = authUtils.getCurrentUserId();
 
@@ -43,15 +47,18 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Cacheable(value = "boards", key = "#id")
     public BoardResponseDTO getBoardById(String id) {
+        log.debug("Cache miss for board with ID: {}", id);
         String currentUserId = authUtils.getCurrentUserId();
         BoardEntity boardEntity = accessControlService.findBoardAndCheckAccess(id, currentUserId);
         return boardEntityToBoardResponseMapper.map(boardEntity);
     }
 
     @Override
+    @Cacheable(value = "userBoards", key = "#userId")
     public List<BoardResponseDTO> getAllBoardsByUserId(String userId) {
-        log.info("Fetching all boards for user: {}", userId);
+        log.info("Cache miss for boards of user: {}", userId);
         try {
             List<BoardEntity> boards = boardRepository.findByOwnerIdOrCollaboratorIdsContains(userId, userId);
             log.info("Found {} boards for user: {}", boards.size(), userId);
@@ -70,6 +77,10 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "boards", key = "#id"),
+        @CacheEvict(value = "userBoards", allEntries = true)
+    })
     public BoardResponseDTO updateBoard(String id, BoardRequestDTO boardRequest) {
         String currentUserId = authUtils.getCurrentUserId();
         BoardEntity existingBoard = accessControlService.findBoardAndCheckAccess(id, currentUserId);
@@ -87,6 +98,10 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "boards", key = "#id"),
+        @CacheEvict(value = "userBoards", allEntries = true)
+    })
     public void deleteBoard(String id) {
         String currentUserId = authUtils.getCurrentUserId();
         BoardEntity boardEntity = accessControlService.findBoardAndCheckAccess(id, currentUserId);

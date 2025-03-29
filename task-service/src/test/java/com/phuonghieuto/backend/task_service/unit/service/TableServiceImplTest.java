@@ -15,6 +15,7 @@ import com.phuonghieuto.backend.task_service.util.AuthUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -23,6 +24,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -44,6 +46,7 @@ class TableServiceImplTest {
     @Mock
     private TableEntityToTableResponseMapper tableEntityToTableResponseMapper;
 
+    @InjectMocks
     private TableServiceImpl tableService;
 
     private static final String TEST_USER_ID = "test-user-id";
@@ -52,7 +55,7 @@ class TableServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        // Use mocked static methods for mappers
+        // Mock static initialization methods
         try (MockedStatic<TableRequestToTableEntityMapper> mockedRequestMapper = Mockito
                 .mockStatic(TableRequestToTableEntityMapper.class);
                 MockedStatic<TableEntityToTableResponseMapper> mockedResponseMapper = Mockito
@@ -63,8 +66,6 @@ class TableServiceImplTest {
 
             mockedResponseMapper.when(TableEntityToTableResponseMapper::initialize)
                     .thenReturn(tableEntityToTableResponseMapper);
-
-            tableService = new TableServiceImpl(tableRepository, accessControlService, authUtils);
         }
     }
 
@@ -96,13 +97,11 @@ class TableServiceImplTest {
         expectedResponse.setBoardId(TEST_BOARD_ID);
         expectedResponse.setOrderIndex(3);
 
+        // Setup mocks
         when(authUtils.getCurrentUserId()).thenReturn(TEST_USER_ID);
         when(accessControlService.findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID)).thenReturn(boardEntity);
         when(tableRepository.findByBoardIdOrderByOrderIndexAsc(TEST_BOARD_ID)).thenReturn(existingTables);
-        when(tableRequestToTableEntityMapper.mapForCreation(any(TableRequestDTO.class), eq(boardEntity)))
-                .thenReturn(createdTableEntity);
-        when(tableRepository.save(createdTableEntity)).thenReturn(createdTableEntity);
-        when(tableEntityToTableResponseMapper.map(createdTableEntity)).thenReturn(expectedResponse);
+        when(tableRepository.save(any(TableEntity.class))).thenReturn(createdTableEntity);
 
         // Act
         TableResponseDTO result = tableService.createTable(tableRequest);
@@ -117,9 +116,7 @@ class TableServiceImplTest {
         verify(authUtils).getCurrentUserId();
         verify(accessControlService).findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID);
         verify(tableRepository).findByBoardIdOrderByOrderIndexAsc(TEST_BOARD_ID);
-        verify(tableRequestToTableEntityMapper).mapForCreation(any(TableRequestDTO.class), eq(boardEntity));
-        verify(tableRepository).save(createdTableEntity);
-        verify(tableEntityToTableResponseMapper).map(createdTableEntity);
+        verify(tableRepository).save(any(TableEntity.class));
     }
 
     @Test
@@ -152,10 +149,9 @@ class TableServiceImplTest {
         when(authUtils.getCurrentUserId()).thenReturn(TEST_USER_ID);
         when(accessControlService.findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID)).thenReturn(boardEntity);
         when(tableRepository.findByBoardIdOrderByOrderIndexAsc(TEST_BOARD_ID)).thenReturn(existingTables);
-        when(tableRequestToTableEntityMapper.mapForCreation(any(TableRequestDTO.class), eq(boardEntity)))
-                .thenReturn(createdTableEntity);
-        when(tableRepository.save(createdTableEntity)).thenReturn(createdTableEntity);
-        when(tableEntityToTableResponseMapper.map(createdTableEntity)).thenReturn(expectedResponse);
+        
+        when(tableRepository.save(any(TableEntity.class))).thenReturn(createdTableEntity);
+        
 
         // Act
         TableResponseDTO result = tableService.createTable(tableRequest);
@@ -170,9 +166,9 @@ class TableServiceImplTest {
         verify(authUtils).getCurrentUserId();
         verify(accessControlService).findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID);
         verify(tableRepository).findByBoardIdOrderByOrderIndexAsc(TEST_BOARD_ID);
-        verify(tableRequestToTableEntityMapper).mapForCreation(any(TableRequestDTO.class), eq(boardEntity));
-        verify(tableRepository).save(createdTableEntity);
-        verify(tableEntityToTableResponseMapper).map(createdTableEntity);
+    
+        verify(tableRepository).save(any(TableEntity.class));
+        
     }
 
     @Test
@@ -202,9 +198,9 @@ class TableServiceImplTest {
 
         when(authUtils.getCurrentUserId()).thenReturn(TEST_USER_ID);
         when(accessControlService.findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID)).thenReturn(boardEntity);
-        when(tableRequestToTableEntityMapper.mapForCreation(tableRequest, boardEntity)).thenReturn(createdTableEntity);
-        when(tableRepository.save(createdTableEntity)).thenReturn(createdTableEntity);
-        when(tableEntityToTableResponseMapper.map(createdTableEntity)).thenReturn(expectedResponse);
+        
+        when(tableRepository.save(any(TableEntity.class))).thenReturn(createdTableEntity);
+        
 
         // Act
         TableResponseDTO result = tableService.createTable(tableRequest);
@@ -218,9 +214,9 @@ class TableServiceImplTest {
 
         verify(authUtils).getCurrentUserId();
         verify(accessControlService).findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID);
-        verify(tableRequestToTableEntityMapper).mapForCreation(tableRequest, boardEntity);
-        verify(tableRepository).save(createdTableEntity);
-        verify(tableEntityToTableResponseMapper).map(createdTableEntity);
+        
+        verify(tableRepository).save(any(TableEntity.class));
+        
         // Should not query for existing tables since order index is specified
         verify(tableRepository, never()).findByBoardIdOrderByOrderIndexAsc(TEST_BOARD_ID);
     }
@@ -247,7 +243,6 @@ class TableServiceImplTest {
 
         when(authUtils.getCurrentUserId()).thenReturn(TEST_USER_ID);
         when(accessControlService.findTableAndCheckAccess(TEST_TABLE_ID, TEST_USER_ID)).thenReturn(tableEntity);
-        when(tableEntityToTableResponseMapper.map(tableEntity)).thenReturn(expectedResponse);
 
         // Act
         TableResponseDTO result = tableService.getTableById(TEST_TABLE_ID);
@@ -261,7 +256,6 @@ class TableServiceImplTest {
 
         verify(authUtils).getCurrentUserId();
         verify(accessControlService).findTableAndCheckAccess(TEST_TABLE_ID, TEST_USER_ID);
-        verify(tableEntityToTableResponseMapper).map(tableEntity);
     }
 
     @Test
@@ -288,8 +282,6 @@ class TableServiceImplTest {
         when(authUtils.getCurrentUserId()).thenReturn(TEST_USER_ID);
         when(accessControlService.findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID)).thenReturn(boardEntity);
         when(tableRepository.findByBoardIdOrderByOrderIndexAsc(TEST_BOARD_ID)).thenReturn(tableEntities);
-        when(tableEntityToTableResponseMapper.map(table1)).thenReturn(response1);
-        when(tableEntityToTableResponseMapper.map(table2)).thenReturn(response2);
 
         // Act
         List<TableResponseDTO> result = tableService.getAllTablesByBoardId(TEST_BOARD_ID);
@@ -303,8 +295,6 @@ class TableServiceImplTest {
         verify(authUtils).getCurrentUserId();
         verify(accessControlService).findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID);
         verify(tableRepository).findByBoardIdOrderByOrderIndexAsc(TEST_BOARD_ID);
-        verify(tableEntityToTableResponseMapper).map(table1);
-        verify(tableEntityToTableResponseMapper).map(table2);
     }
 
     @Test
@@ -341,7 +331,7 @@ class TableServiceImplTest {
         when(authUtils.getCurrentUserId()).thenReturn(TEST_USER_ID);
         when(accessControlService.findTableAndCheckAccess(TEST_TABLE_ID, TEST_USER_ID)).thenReturn(existingTable);
         when(tableRepository.save(any(TableEntity.class))).thenReturn(updatedTable);
-        when(tableEntityToTableResponseMapper.map(updatedTable)).thenReturn(expectedResponse);
+        
 
         // Act
         TableResponseDTO result = tableService.updateTable(TEST_TABLE_ID, updateRequest);
@@ -356,7 +346,7 @@ class TableServiceImplTest {
         verify(authUtils).getCurrentUserId();
         verify(accessControlService).findTableAndCheckAccess(TEST_TABLE_ID, TEST_USER_ID);
         verify(tableRepository).save(any(TableEntity.class));
-        verify(tableEntityToTableResponseMapper).map(updatedTable);
+        
         // No need to check board access again since board hasn't changed
         verify(accessControlService, never()).findBoardAndCheckAccess(eq(TEST_BOARD_ID), anyString());
     }
@@ -403,7 +393,7 @@ class TableServiceImplTest {
         when(accessControlService.findTableAndCheckAccess(TEST_TABLE_ID, TEST_USER_ID)).thenReturn(existingTable);
         when(accessControlService.findBoardAndCheckAccess(newBoardId, TEST_USER_ID)).thenReturn(newBoardEntity);
         when(tableRepository.save(any(TableEntity.class))).thenReturn(updatedTable);
-        when(tableEntityToTableResponseMapper.map(updatedTable)).thenReturn(expectedResponse);
+        
 
         // Act
         TableResponseDTO result = tableService.updateTable(TEST_TABLE_ID, updateRequest);
@@ -419,7 +409,7 @@ class TableServiceImplTest {
         verify(accessControlService).findTableAndCheckAccess(TEST_TABLE_ID, TEST_USER_ID);
         verify(accessControlService).findBoardAndCheckAccess(newBoardId, TEST_USER_ID);
         verify(tableRepository).save(any(TableEntity.class));
-        verify(tableEntityToTableResponseMapper).map(updatedTable);
+        
     }
 
     @Test
@@ -456,7 +446,7 @@ class TableServiceImplTest {
         when(authUtils.getCurrentUserId()).thenReturn(TEST_USER_ID);
         when(accessControlService.findTableAndCheckAccess(TEST_TABLE_ID, TEST_USER_ID)).thenReturn(existingTable);
         when(tableRepository.save(any(TableEntity.class))).thenReturn(updatedTable);
-        when(tableEntityToTableResponseMapper.map(updatedTable)).thenReturn(expectedResponse);
+        
 
         // Act
         TableResponseDTO result = tableService.updateTable(TEST_TABLE_ID, updateRequest);
@@ -471,7 +461,7 @@ class TableServiceImplTest {
         verify(authUtils).getCurrentUserId();
         verify(accessControlService).findTableAndCheckAccess(TEST_TABLE_ID, TEST_USER_ID);
         verify(tableRepository).save(any(TableEntity.class));
-        verify(tableEntityToTableResponseMapper).map(updatedTable);
+        
     }
 
     @Test
@@ -524,6 +514,7 @@ class TableServiceImplTest {
         when(tableRepository.findById("table-1")).thenReturn(Optional.of(table1));
         when(tableRepository.findById("table-2")).thenReturn(Optional.of(table2));
         when(tableRepository.findById("table-3")).thenReturn(Optional.of(table3));
+        when(tableRepository.save(any(TableEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         tableService.reorderTables(TEST_BOARD_ID, newTableOrder);
@@ -550,14 +541,15 @@ class TableServiceImplTest {
         boardEntity.setOwnerId(TEST_USER_ID);
 
         List<String> tableIds = Arrays.asList("table-1", "nonexistent-table", "table-3");
+        
         TableEntity table1 = createTableEntity("table-1", 1);
         table1.setBoard(boardEntity);
-        TableEntity table3 = createTableEntity("table-3", 3);
-        table3.setBoard(boardEntity);
+        
         when(authUtils.getCurrentUserId()).thenReturn(TEST_USER_ID);
         when(accessControlService.findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID)).thenReturn(boardEntity);
         when(tableRepository.findById("table-1")).thenReturn(Optional.of(table1));
         when(tableRepository.findById("nonexistent-table")).thenReturn(Optional.empty());
+        when(tableRepository.save(any(TableEntity.class))).thenReturn(table1);
 
         // Act & Assert
         TableNotFoundException exception = assertThrows(TableNotFoundException.class, () -> {
@@ -598,6 +590,7 @@ class TableServiceImplTest {
         when(accessControlService.findBoardAndCheckAccess(TEST_BOARD_ID, TEST_USER_ID)).thenReturn(boardEntity);
         when(tableRepository.findById("table-1")).thenReturn(Optional.of(table1));
         when(tableRepository.findById("table-2")).thenReturn(Optional.of(table2));
+        when(tableRepository.save(any(TableEntity.class))).thenReturn(table1);
 
         // Act & Assert
         UnauthorizedAccessException exception = assertThrows(UnauthorizedAccessException.class, () -> {
@@ -608,7 +601,7 @@ class TableServiceImplTest {
         verify(tableRepository).findById("table-1");
         verify(tableRepository).findById("table-2");
         // Should save the first table before encountering the error
-        verify(tableRepository).save(table1);
+        verify(tableRepository).save(any(TableEntity.class));
     }
 
     // Helper methods

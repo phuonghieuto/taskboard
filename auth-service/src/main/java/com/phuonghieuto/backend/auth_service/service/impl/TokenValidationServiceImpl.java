@@ -11,6 +11,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,14 +26,17 @@ import java.util.Set;
 public class TokenValidationServiceImpl implements TokenValidationService {
     private final TokenConfigurationParameter tokenConfigurationParameter;
     private final TokenManagementService tokenManagementService;
+
+
     @Override
-    public boolean verifyAndValidate(String jwt) {
+    @Cacheable(value = "tokenValidation", key = "#token")
+    public boolean verifyAndValidate(String token) {
         try {
-            tokenManagementService.checkForInvalidityOfToken(getId(jwt));
+            tokenManagementService.checkForInvalidityOfToken(getId(token));
             Jws<Claims> claimsJws = Jwts.parserBuilder()
                     .setSigningKey(tokenConfigurationParameter.getPublicKey())
                     .build()
-                    .parseClaimsJws(jwt);
+                    .parseClaimsJws(token);
 
             Claims claims = claimsJws.getBody();
 

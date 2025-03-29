@@ -170,7 +170,6 @@ public class NotificationControllerIntegrationTest extends BaseIntegrationTest {
         NotificationEntity notification = createNotification(TEST_USER_ID, "Task Due Soon", "Task 1 is due soon", 
                 "TASK_DUE_SOON", "task-1", "TASK", false);
         
-        // Mark it as read
         MvcResult result = mockMvc.perform(put("/notifications/{id}/read", notification.getId())
                 .header("Authorization", "Bearer " + accessToken))
                 .andDo(print())

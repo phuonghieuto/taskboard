@@ -18,7 +18,9 @@ import com.phuonghieuto.backend.notification_service.config.TestKeysInitializer;
         "spring.rabbitmq.port=5672",
         "spring.rabbitmq.username=guest",
         "spring.rabbitmq.password=guest",
-        "spring.rabbitmq.enabled=false"
+        "spring.rabbitmq.enabled=false",
+        "spring.redis.enabled=false",
+        "spring.cache.type=none",
     }
 )
 @ActiveProfiles("test")

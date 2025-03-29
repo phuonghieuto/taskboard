@@ -20,6 +20,8 @@ import com.phuonghieuto.backend.auth_service.service.TokenValidationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         private final TokenToTokenResponseMapper tokenToTokenResponseMapper;
 
         @Override
+        @Cacheable(value = "userTokens", key = "#loginRequest.email")
         public TokenResponseDTO login(LoginRequestDTO loginRequest) {
                 final UserEntity userEntityFromDB = userRepository.findUserEntityByEmail(loginRequest.getEmail())
                                 .orElseThrow(() -> new UserNotFoundException(
@@ -59,6 +62,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         @Override
+        @Cacheable(value = "refreshedTokens", key = "#tokenRefreshRequest.refreshToken")
         public TokenResponseDTO refreshToken(TokenRefreshRequestDTO tokenRefreshRequest) {
 
                 tokenValidationService.verifyAndValidate(tokenRefreshRequest.getRefreshToken());
@@ -79,6 +83,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
         @Override
+            @CacheEvict(value = {"userTokens", "refreshedTokens", "tokenValidation", "tokenPayloads"}, allEntries = true)
         public void logout(TokenInvalidateRequestDTO tokenInvalidateRequest) {
                 tokenValidationService.verifyAndValidate(Set.of(tokenInvalidateRequest.getAccessToken(),
                                 tokenInvalidateRequest.getRefreshToken()));

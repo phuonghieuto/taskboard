@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -32,6 +33,7 @@ public class TokenServiceImpl implements TokenService {
     private final TokenConfigurationParameter tokenConfigurationParameter;
 
     @Override
+    @Cacheable(value = "tokenValidation", key = "#token")
     public void validateToken(String token) {
         try {
             Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(tokenConfigurationParameter.getPublicKey())
