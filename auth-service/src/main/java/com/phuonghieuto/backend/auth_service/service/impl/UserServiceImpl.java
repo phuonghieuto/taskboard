@@ -37,10 +37,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "userById", allEntries = true),
-        @CacheEvict(value = "userByEmail", allEntries = true)
-    })
+    @Caching(evict = { @CacheEvict(value = "userById", allEntries = true),
+            @CacheEvict(value = "userByEmail", allEntries = true) })
     public User registerUser(RegisterRequestDTO registerRequest) {
         log.info("Registering new user with email: {}", registerRequest.getEmail());
 
@@ -94,10 +92,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "userById", key = "#result.userId"),
-        @CacheEvict(value = "userByEmail", key = "#result.email")
-    })
+    @CacheEvict(value = { "userById", "userByEmail" }, allEntries = true)
     public boolean confirmEmail(String token) {
         log.info("Confirming email with token: {}", token);
 
@@ -113,7 +108,7 @@ public class UserServiceImpl implements UserService {
         user.setConfirmationToken(null);
         user.setConfirmationTokenExpiry(null);
         UserEntity savedUser = userRepository.save(user);
-        
+
         log.info("Email confirmed successfully for user: {}", savedUser.getId());
         return true;
     }
