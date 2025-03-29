@@ -19,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +50,7 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     private int invitationExpirationHours;
 
     @Override
+    @CacheEvict(value = {"boardInvitations", "userInvitations"}, allEntries = true)
     public BoardInvitationResponseDTO createInvitation(String boardId, BoardInvitationRequestDTO invitationRequest) {
         log.info("Creating invitation for board: {}, invitee: {}", boardId, invitationRequest.getEmail());
         String currentUserId = authUtils.getCurrentUserId();
@@ -90,6 +94,7 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     }
 
     @Override
+    @Cacheable(value = "invitations", key = "#id")
     public BoardInvitationResponseDTO getInvitationById(String id) {
         log.info("Retrieving invitation by ID: {}", id);
         BoardInvitationEntity invitation = findInvitationById(id);
@@ -106,6 +111,7 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     }
 
     @Override
+    @Cacheable(value = "boardInvitations", key = "#boardId")
     public List<BoardInvitationResponseDTO> getPendingInvitationsForBoard(String boardId) {
         log.info("Retrieving pending invitations for board: {}", boardId);
         String currentUserId = authUtils.getCurrentUserId();
@@ -119,6 +125,7 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     }
 
     @Override
+    @Cacheable(value = "userInvitations", key = "#email")
     public List<BoardInvitationResponseDTO> getPendingInvitationsForUser(String email) {
         log.info("Retrieving pending invitations for user: {}", email);
         List<BoardInvitationEntity> pendingInvitations = boardInvitationRepository.findByInviteeEmailAndStatusIn(email,
@@ -129,6 +136,10 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "invitations", key = "#id"),
+        @CacheEvict(value = {"boardInvitations", "userInvitations"}, allEntries = true)
+    })
     public BoardInvitationResponseDTO updateInvitationStatus(String id, InvitationStatus status) {
         log.info("Updating invitation status: {}, new status: {}", id, status);
         if (status == InvitationStatus.PENDING) {
@@ -185,6 +196,10 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "invitations", key = "#id"),
+        @CacheEvict(value = {"boardInvitations", "userInvitations"}, allEntries = true)
+    })
     public void cancelInvitation(String id) {
         log.info("Cancelling invitation: {}", id);
         BoardInvitationEntity invitation = findInvitationById(id);
@@ -202,6 +217,7 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     }
 
     @Override
+    @CacheEvict(value = {"boardInvitations", "userInvitations", "invitations"}, allEntries = true)
     @Scheduled(cron = "0 0 * * * *") // Run every hour
     @Transactional
     public void processExpiredInvitations() {
@@ -251,6 +267,7 @@ public class BoardInvitationServiceImpl implements BoardInvitationService {
     }
 
     @Override
+    @Cacheable(value = "invitationTokens", key = "#token")
     public BoardInvitationResponseDTO getInvitationByToken(String token) {
         log.info("Retrieving invitation by token: {}", token);
         BoardInvitationEntity invitation = boardInvitationRepository.findByToken(token)

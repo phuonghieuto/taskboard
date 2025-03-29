@@ -29,6 +29,12 @@ spring:
       enabled: true
     scheduled:
       enabled: true
+  redis:
+    host: redis
+    port: 6379
+    timeout: 300000
+  cache:
+    type: redis
 
 # Task reminder schedule configuration
 task:

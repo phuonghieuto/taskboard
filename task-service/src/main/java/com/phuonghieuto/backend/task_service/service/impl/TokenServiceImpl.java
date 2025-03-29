@@ -8,6 +8,9 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,6 +34,7 @@ public class TokenServiceImpl implements TokenService {
     private final TokenConfigurationParameter tokenConfigurationParameter;
 
     @Override
+    @Cacheable(value = "tokenValidation", key = "#token")
     public void validateToken(String token) {
         try {
             Jws<Claims> claimsJws = Jwts.parserBuilder().setSigningKey(tokenConfigurationParameter.getPublicKey())

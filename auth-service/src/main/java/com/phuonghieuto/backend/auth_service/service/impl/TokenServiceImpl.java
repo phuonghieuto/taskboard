@@ -12,6 +12,8 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -28,6 +30,7 @@ public class TokenServiceImpl implements TokenService {
         private final TokenValidationService tokenValidationService;
 
         @Override
+        @Cacheable(value = "tokenCache", key = "#token")
         public UsernamePasswordAuthenticationToken getAuthentication(final String token) {
                 log.debug("TokenServiceImpl | getAuthentication | token: {}", token);
                 try {

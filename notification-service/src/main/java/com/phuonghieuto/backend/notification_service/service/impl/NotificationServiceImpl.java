@@ -15,6 +15,9 @@ import com.phuonghieuto.backend.notification_service.service.NotificationService
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final ObjectMapper objectMapper;
 
     @Override
+    @CacheEvict(value = "unreadNotificationsCount", key = "#taskNotification.recipientId")
     public NotificationEntity createTaskDueSoonNotification(TaskNotificationDTO taskNotification) {
         try {
             String jsonPayload = objectMapper.writeValueAsString(taskNotification);
@@ -80,6 +84,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @CacheEvict(value = "unreadNotificationsCount", key = "#taskNotification.recipientId")
     public NotificationEntity createTaskOverdueNotification(TaskNotificationDTO taskNotification) {
         try {
             String jsonPayload = objectMapper.writeValueAsString(taskNotification);
@@ -164,32 +169,35 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    // Keep your existing methods...
     @Override
     public Page<NotificationEntity> getUserNotifications(String userId, Pageable pageable) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
     }
 
     @Override
+    @Cacheable(value = "unreadNotifications", key = "#userId")
     public List<NotificationEntity> getUnreadNotifications(String userId) {
         return notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
     }
 
     @Override
+    @Cacheable(value = "unreadNotificationsCount", key = "#userId")
     public long countUnreadNotifications(String userId) {
         return notificationRepository.countByUserIdAndReadFalse(userId);
     }
 
     @Override
+    @CacheEvict(value = {"unreadNotifications", "unreadNotificationsCount"}, key = "#result.userId")
     public NotificationEntity markAsRead(String notificationId) {
+        log.info("Marking notification as read: {}", notificationId);
         NotificationEntity notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationNotFoundException("Notification not found"));
-
         notification.setRead(true);
         return notificationRepository.save(notification);
     }
 
     @Override
+    @CacheEvict(value = {"unreadNotifications", "unreadNotificationsCount"}, key = "#userId")
     public void markAllAsRead(String userId) {
         List<NotificationEntity> unreadNotifications = notificationRepository
                 .findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);

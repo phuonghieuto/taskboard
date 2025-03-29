@@ -18,6 +18,9 @@ import com.phuonghieuto.backend.task_service.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +45,8 @@ public class TaskServiceImpl implements TaskService {
     private final AuthUtils authUtils;
 
     @Override
+    @CacheEvict(value = { "tasks", "tasksByTable", "tasksByUser", "tasksByStatus", "upcomingTasks",
+            "taskStatistics" }, allEntries = true)
     public TaskResponseDTO createTask(TaskRequestDTO taskRequest) {
         String currentUserId = authUtils.getCurrentUserId();
 
@@ -63,6 +68,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "tasks", key = "#id")
     public TaskResponseDTO getTaskById(String id) {
         String currentUserId = authUtils.getCurrentUserId();
         TaskEntity taskEntity = accessControlService.findTaskAndCheckAccess(id, currentUserId);
@@ -71,6 +77,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "tasksByTable", key = "#tableId")
     public List<TaskResponseDTO> getAllTasksByTableId(String tableId) {
         String currentUserId = authUtils.getCurrentUserId();
 
@@ -84,6 +91,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "tasksByUser", key = "#userId")
     public List<TaskResponseDTO> getAllTasksByAssignedUserId(String userId) {
         String currentUserId = authUtils.getCurrentUserId();
 
@@ -104,6 +112,8 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Caching(evict = { @CacheEvict(value = "tasks", key = "#id"), @CacheEvict(value = { "tasksByTable", "tasksByUser",
+            "tasksByStatus", "upcomingTasks", "taskStatistics" }, allEntries = true) })
     public TaskResponseDTO updateTask(String id, TaskRequestDTO taskRequest) {
         String currentUserId = authUtils.getCurrentUserId();
         TaskEntity existingTask = accessControlService.findTaskAndCheckAccess(id, currentUserId);
@@ -156,6 +166,11 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "tasks", key = "#id"),
+        @CacheEvict(value = {"tasksByTable", "tasksByUser", "tasksByStatus", "upcomingTasks", "taskStatistics"}, 
+                    allEntries = true)
+    })
     public void deleteTask(String id) {
         String currentUserId = authUtils.getCurrentUserId();
         TaskEntity taskEntity = accessControlService.findTaskAndCheckAccess(id, currentUserId);
@@ -166,6 +181,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"tasksByTable", "tasks", "tasksByUser", "tasksByStatus", "upcomingTasks"}, allEntries = true)
     public void reorderTasks(String tableId, List<String> taskIds) {
         String currentUserId = authUtils.getCurrentUserId();
 
@@ -192,6 +208,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "upcomingTasks", key = "T(java.time.LocalDateTime).now().toLocalDate().toString()")
     public List<TaskResponseDTO> findByDueDateBetween(LocalDateTime start, LocalDateTime end) {
         String currentUserId = authUtils.getCurrentUserId();
 
@@ -222,6 +239,10 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "tasks", key = "#id"),
+        @CacheEvict(value = {"tasksByStatus", "taskStatistics"}, allEntries = true)
+    })
     public TaskResponseDTO updateTaskStatus(String id, TaskStatus newStatus) {
         String currentUserId = authUtils.getCurrentUserId();
         TaskEntity existingTask = accessControlService.findTaskAndCheckAccess(id, currentUserId);
@@ -244,6 +265,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "tasksByStatus", key = "#status")
     public List<TaskResponseDTO> getAllTasksByStatus(TaskStatus status) {
         String currentUserId = authUtils.getCurrentUserId();
 
@@ -258,6 +280,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Cacheable(value = "taskStatistics", key = "#userId")
     public Map<TaskStatus, Long> getTaskStatistics(String userId) {
         Map<TaskStatus, Long> statistics = new HashMap<>();
 

@@ -1,4 +1,3 @@
-// TableServiceImpl.java
 package com.phuonghieuto.backend.task_service.service.impl;
 
 import com.phuonghieuto.backend.task_service.exception.TableNotFoundException;
@@ -16,6 +15,11 @@ import com.phuonghieuto.backend.task_service.util.AuthUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +39,10 @@ public class TableServiceImpl implements TableService {
             .initialize();
     private final EntityAccessControlService accessControlService;
     private final AuthUtils authUtils;
+    private final CacheManager cacheManager;
 
     @Override
+    @CacheEvict(value = "tablesByBoard", key = "#tableRequest.boardId")
     public TableResponseDTO createTable(TableRequestDTO tableRequest) {
         String currentUserId = authUtils.getCurrentUserId();
 
@@ -58,7 +64,9 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    @Cacheable(value = "tables", key = "#id")
     public TableResponseDTO getTableById(String id) {
+        log.debug("Cache miss for table with ID: {}", id);
         String currentUserId = authUtils.getCurrentUserId();
         TableEntity tableEntity = accessControlService.findTableAndCheckAccess(id, currentUserId);
 
@@ -66,7 +74,9 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    @Cacheable(value = "tablesByBoard", key = "#boardId")
     public List<TableResponseDTO> getAllTablesByBoardId(String boardId) {
+        log.debug("Cache miss for tables by board ID: {}", boardId);
         String currentUserId = authUtils.getCurrentUserId();
 
         // Check if board exists and user has access to it
@@ -79,15 +89,23 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "tables", key = "#id"),
+        @CacheEvict(value = "tablesByBoard", key = "#tableRequest.boardId")
+    })
     public TableResponseDTO updateTable(String id, TableRequestDTO tableRequest) {
         String currentUserId = authUtils.getCurrentUserId();
         TableEntity existingTable = accessControlService.findTableAndCheckAccess(id, currentUserId);
+
+        // If board ID has changed, also evict cache for old board ID
+        String oldBoardId = existingTable.getBoard().getId();
+        boolean boardChanged = !oldBoardId.equals(tableRequest.getBoardId());
 
         // Update table properties
         existingTable.setName(tableRequest.getName());
 
         // If board ID has changed (table moved to another board)
-        if (!existingTable.getBoard().getId().equals(tableRequest.getBoardId())) {
+        if (boardChanged) {
             BoardEntity newBoard = accessControlService.findBoardAndCheckAccess(tableRequest.getBoardId(),
                     currentUserId);
             existingTable.setBoard(newBoard);
@@ -105,6 +123,10 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "tables", key = "#id"),
+        @CacheEvict(value = "tablesByBoard", allEntries = true)
+    })
     public void deleteTable(String id) {
         String currentUserId = authUtils.getCurrentUserId();
         TableEntity tableEntity = accessControlService.findTableAndCheckAccess(id, currentUserId);
@@ -115,6 +137,7 @@ public class TableServiceImpl implements TableService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "tablesByBoard", key = "#boardId")
     public void reorderTables(String boardId, List<String> tableIds) {
         String currentUserId = authUtils.getCurrentUserId();
 

@@ -8,7 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @TestConfiguration
-@Import({ TestRabbitMQConfig.class, TestNotificationConfig.class })
+@Import({ TestRabbitMQConfig.class, TestNotificationConfig.class, TestRedisConfig.class })
 public class TestConfig {
 
     @Bean

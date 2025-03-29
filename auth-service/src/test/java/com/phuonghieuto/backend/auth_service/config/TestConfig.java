@@ -11,7 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.mockito.Mockito;
 
 @TestConfiguration
-@Import({ TestRabbitMQConfig.class, TestNotificationConfig.class })
+@Import({ TestRabbitMQConfig.class, TestNotificationConfig.class, TestRedisConfig.class })
 public class TestConfig {
 
     @Bean

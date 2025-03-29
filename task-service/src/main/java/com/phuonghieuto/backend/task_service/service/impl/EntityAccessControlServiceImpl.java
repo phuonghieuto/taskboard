@@ -1,5 +1,6 @@
 package com.phuonghieuto.backend.task_service.service.impl;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.phuonghieuto.backend.task_service.exception.BoardNotFoundException;
@@ -23,6 +24,8 @@ public class EntityAccessControlServiceImpl implements EntityAccessControlServic
     private final TableRepository tableRepository;
     private final TaskRepository taskRepository;
 
+    @Override
+    @Cacheable(value = "boardAccessControl", key = "#boardId + '-' + #userId")
     public BoardEntity findBoardAndCheckAccess(String boardId, String userId) {
         BoardEntity boardEntity = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BoardNotFoundException("Board not found"));
@@ -31,6 +34,8 @@ public class EntityAccessControlServiceImpl implements EntityAccessControlServic
         return boardEntity;
     }
 
+    @Override
+    @Cacheable(value = "tableAccessControl", key = "#tableId + '-' + #userId")
     public TableEntity findTableAndCheckAccess(String tableId, String userId) {
         TableEntity tableEntity = tableRepository.findById(tableId)
                 .orElseThrow(() -> new TableNotFoundException("Table not found with ID: " + tableId));
@@ -39,6 +44,8 @@ public class EntityAccessControlServiceImpl implements EntityAccessControlServic
         return tableEntity;
     }
 
+    @Override
+    @Cacheable(value = "taskAccessControl", key = "#taskId + '-' + #userId")
     public TaskEntity findTaskAndCheckAccess(String taskId, String userId) {
         TaskEntity taskEntity = taskRepository.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found with ID: " + taskId));

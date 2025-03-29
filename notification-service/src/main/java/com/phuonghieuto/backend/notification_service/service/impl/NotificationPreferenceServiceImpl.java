@@ -6,6 +6,9 @@ import com.phuonghieuto.backend.notification_service.service.NotificationPrefere
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,7 +21,9 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     private final NotificationPreferenceRepository preferenceRepository;
 
     @Override
+    @Cacheable(value = "userPreferences", key = "#userId")
     public NotificationPreferenceEntity getPreferences(String userId) {
+        log.debug("Cache miss for user preferences with userId: {}", userId);
         Optional<NotificationPreferenceEntity> existingPrefs = preferenceRepository.findByUserId(userId);
         if(existingPrefs.isPresent()) {
             return existingPrefs.get();
@@ -29,6 +34,7 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
 
     @Override
+    @CacheEvict(value = "userPreferences", key = "#preferences.userId")
     public NotificationPreferenceEntity updatePreferences(NotificationPreferenceEntity preferences) {
         // Ensure we're updating the right user's preferences
         NotificationPreferenceEntity existingPrefs = getPreferences(preferences.getUserId());
@@ -42,6 +48,7 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
 
     @Override
+    @CacheEvict(value = "userPreferences", key = "#userId")
     public NotificationPreferenceEntity setEmailEnabled(String userId, boolean enabled) {
         NotificationPreferenceEntity preferences = getPreferences(userId);
         preferences.setEmailEnabled(enabled);
@@ -49,6 +56,7 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
 
     @Override
+    @CacheEvict(value = "userPreferences", key = "#userId")
     public NotificationPreferenceEntity setWebsocketEnabled(String userId, boolean enabled) {
         NotificationPreferenceEntity preferences = getPreferences(userId);
         preferences.setWebsocketEnabled(enabled);
@@ -56,6 +64,7 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
 
     @Override
+    @CacheEvict(value = "userPreferences", key = "#userId")
     public NotificationPreferenceEntity configureQuietHours(String userId, boolean enabled, Integer start,
             Integer end) {
         NotificationPreferenceEntity preferences = getPreferences(userId);
@@ -74,6 +83,7 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
 
     @Override
+    @CacheEvict(value = "userPreferences", key = "#userId")
     public NotificationPreferenceEntity setNotificationTypeEnabled(String userId, String type, boolean enabled) {
         NotificationPreferenceEntity preferences = getPreferences(userId);
 
@@ -99,6 +109,7 @@ public class NotificationPreferenceServiceImpl implements NotificationPreference
     }
 
     @Override
+    @CacheEvict(value = "userPreferences", key = "#userId")
     public NotificationPreferenceEntity resetToDefaults(String userId) {
         // Get existing preferences if any
         Optional<NotificationPreferenceEntity> existingPrefs = preferenceRepository.findByUserId(userId);

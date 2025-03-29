@@ -19,7 +19,7 @@ A robust task management system built with Spring Boot microservices architectur
 - [License](#license)
 
 ## Architecture Overview
-
+![Architecture Diagram](docs/images/diagram.png)
 This project implements a microservices architecture with the following components:
 
 - **Discovery Server**: Service registry using Netflix Eureka
@@ -64,8 +64,8 @@ This project implements a microservices architecture with the following componen
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/taskboard-backend.git
-   cd taskboard-backend
+   git clone https://github.com/phuonghieuto/taskboard.git
+   cd taskboard
    ```
 2. Create environment file from the template:
     ``` bash
