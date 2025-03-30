@@ -27,6 +27,7 @@ This project implements a microservices architecture with the following componen
 - **Auth Service**: Manages user authentication, registration, and JWT token generation
 - **Task Service**: Core business logic for task management, boards, and tables
 - **Notification Service**: Handles real-time notifications via WebSockets and email alerts
+- **Redis**: Provides distributed caching to improve performance and reduce database load
 
 ## Key Features
 
@@ -35,6 +36,7 @@ This project implements a microservices architecture with the following componen
 - **Board Organization**: Organize tasks in customizable boards and tables
 - **Real-time Notifications**: Receive instant notifications about task events via WebSockets
 - **Email Alerts**: Get email notifications for task assignments and deadlines
+- **Distributed Caching**: Redis-based caching to improve API response times and reduce database load
 - **Comprehensive Monitoring**: Full observability with Prometheus, Grafana, and ELK stack
 - **Scalable Architecture**: Independent services that can scale according to demand
 - **CI/CD Pipeline**: Automated testing, building, and deployment with GitHub Actions
@@ -46,6 +48,7 @@ This project implements a microservices architecture with the following componen
 - **Service Discovery**: Netflix Eureka
 - **API Gateway**: Spring Cloud Gateway
 - **Database**: PostgreSQL
+- **Caching**: Redis
 - **Messaging**: RabbitMQ
 - **Authentication**: JWT-based auth
 - **Documentation**: OpenAPI/Swagger
